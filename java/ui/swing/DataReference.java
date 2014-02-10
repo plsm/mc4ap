@@ -1,6 +1,7 @@
 package ui.swing;
 
-import ui.MercuryReference;
+import data.AbstractDataReference;
+import jmercury.userInterface.SetResult_1;
 
 /**
  * Holds the current value of the data shown in some component.
@@ -9,13 +10,10 @@ import ui.MercuryReference;
  * 
  * @author Pedro Mariano
  */
-final class DataReference<T>
-	extends AbstractDataReference<T>
+final class DataReference<D>
+	extends AbstractDataReference<D>
 {
-	/**
-	 * The current value of the data.
-	 */
-	T value;
+	final UIFrame frame;
 	/**
 	 * Construct a data with no value.
 	 */
@@ -28,19 +26,31 @@ final class DataReference<T>
 	 * 
 	 * @param value 
 	 */
-	DataReference (UIFrame frame, T value)
+	DataReference (UIFrame frame, D value)
 	{
-		super (frame);
-		this.value = value;
+		this.setValue (value);
+		this.frame = frame;
 	}
+
 	@Override
-	public T getValue ()
+	public boolean handle_setResult (SetResult_1<D> mdata)
 	{
-		return this.value;
-	}
-	@Override
-	public void setValue (T newValue)
-	{
-		this.value = newValue;
+		boolean result;
+		if (mdata instanceof SetResult_1.Ok_1) {
+			SetResult_1.Ok_1<D> newData = (SetResult_1.Ok_1<D>) mdata;
+			this.setValue (newData.F1);
+			this.frame.messagesLabel.setText (" ");
+			result = false;
+		}
+		else if (mdata instanceof SetResult_1.Error_1) {
+			SetResult_1.Error_1 error = (SetResult_1.Error_1) mdata;
+			this.frame.messagesLabel.setText (error.F1);
+			result = true;
+		}
+		else {
+			throw new UnsupportedOperationException ("Unsupported SetResult");
+		}
+		frame.okButton.setEnabled (!result);
+		return !result;
 	}
 }

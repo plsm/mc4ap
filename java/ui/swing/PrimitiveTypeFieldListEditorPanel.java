@@ -9,26 +9,21 @@ package ui.swing;
 import javax.swing.DefaultListModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import ui.MercuryReference;
+import data.AbstractMercuryReference;
+import data.MercuryReference;
+import jmercury.list;
 
 /**
  * A panel with a swing list that shows a list field of {@code data}.
  *
  * @author  Pedro Mariano
  */
-final class PrimitiveTypeFieldListEditorPanel<T>
-	extends AbstractDataPanel
+final class PrimitiveTypeFieldListEditorPanel<D, F>
+	extends AbstractFieldListEditorPanel<D, F>
 	implements ComponentPopulate
 {
 	final private String fieldName;
-	/**
-	 * The get function used to get a list field of {@code data}.
-	 */
-	final private Object[] getFunc;
-	/**
-	 * The set function used to update a list field of {@code data}.
-	 */
-	final private Object[] setFunc;
+
 	/**
 	 * The list model used to show the values in {@code valuesList}.
 	 */
@@ -40,27 +35,25 @@ final class PrimitiveTypeFieldListEditorPanel<T>
 	/**
 	 * Creates new form FieldListEditorPanel
 	 */
-	PrimitiveTypeFieldListEditorPanel (MercuryReference data, UIFrame frame, String fieldName, Object[] getFunc, Object[] setFunc, T value, MercuryType mercuryType)
+	PrimitiveTypeFieldListEditorPanel (AbstractMercuryReference<D> data, UIFrame frame, String fieldName, Object[] getFunc, Object[] setFunc, F value, MercuryType mercuryType)
 	{
-		super (data, frame);
+		super (data, frame, getFunc, setFunc, null, null);
 		this.fieldName = fieldName;
-		this.getFunc = getFunc;
-		this.setFunc = setFunc;
 		this.fieldList_ListModel = new FieldList_ListModel ();
 		this.mercuryType = mercuryType;
 		initComponents ();
 		this.newValueFormattedTextField.setValue (value);
 	}
 	
-	protected jmercury.list.List_1<T> applyGetFunc ()
-	{
-		return (jmercury.list.List_1<T>) super.applyGetFunc (this.getFunc);
-	}
-	
-	protected boolean applySetFunc (Object value)
-	{
-		return super.applySetFunc (this.setFunc, value);
-	}
+//	protected jmercury.list.List_1<T> applyGetFunc ()
+//	{
+//		return (jmercury.list.List_1<T>) super.applyGetFunc (this.getFunc);
+//	}
+//	
+//	protected boolean applySetFunc (Object value)
+//	{
+//		return super.applySetFunc (this.setFunc, value);
+//	}
 
 	@Override
 	public void valueChanged (MercuryReference data)
@@ -93,7 +86,7 @@ final class PrimitiveTypeFieldListEditorPanel<T>
 		@Override
 		public Object getElementAt (int index)
 		{
-			jmercury.list.List_1<T> list = applyGetFunc ();
+			jmercury.list.List_1<F> list = PrimitiveTypeFieldListEditorPanel.this.data.getValue ();
 			return jmercury.list.det_index0_2_f_0 (PrimitiveTypeFieldListEditorPanel.this.mercuryType.typeInfo_Struct, list, index);
 		}
 		@Override
@@ -103,7 +96,7 @@ final class PrimitiveTypeFieldListEditorPanel<T>
 				return 0;
 			}
 			else {
-				jmercury.list.List_1<T> list = applyGetFunc ();
+				jmercury.list.List_1<F> list = PrimitiveTypeFieldListEditorPanel.this.data.getValue ();
 				return jmercury.list.length_1_f_0 (PrimitiveTypeFieldListEditorPanel.this.mercuryType.typeInfo_Struct, list);
 			}
 		}
@@ -185,25 +178,25 @@ final class PrimitiveTypeFieldListEditorPanel<T>
 	private void delButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delButtonActionPerformed
 		int[] selectedValues = this.valuesList.getSelectedIndices ();
 		//jmercury.list.List_1<T> previousList = (jmercury.list.List_1<T>) this.applyGetFunc (this.getFunc).value;
-		jmercury.list.List_1<T> previousList = this.applyGetFunc ();
+		jmercury.list.List_1<F> previousList = this.data.getValue ();
 		int i = 0, j = 0;
-		jmercury.list.List_1<T> newList;
+		jmercury.list.List_1<F> newList;
 		newList = new jmercury.list.List_1.F_nil_0 ();
-		jmercury.list.List_1.F_cons_2<T> insert, newInsert;
+		jmercury.list.List_1.F_cons_2<F> insert, newInsert;
 		insert = null;
 		// build the new list of new items
 		while (previousList instanceof jmercury.list.List_1.F_cons_2) {
-			jmercury.list.List_1.F_cons_2<T> cons = (jmercury.list.List_1.F_cons_2) previousList;
+			jmercury.list.List_1.F_cons_2<F> cons = (jmercury.list.List_1.F_cons_2) previousList;
 			if (j < selectedValues.length && i == selectedValues [j]) {
 				j++;
 			}
 			else {
 				if (insert == null) {
-					insert = new jmercury.list.List_1.F_cons_2<T> (cons.F1, null);
+					insert = new jmercury.list.List_1.F_cons_2<F> (cons.F1, null);
 					newList = insert;
 				}
 				else {
-					newInsert = new jmercury.list.List_1.F_cons_2<T> (cons.F1, null);
+					newInsert = new jmercury.list.List_1.F_cons_2<F> (cons.F1, null);
 					insert.F2 = newInsert;
 					insert = newInsert;
 				}
@@ -216,7 +209,7 @@ final class PrimitiveTypeFieldListEditorPanel<T>
 			insert.F2 = new jmercury.list.List_1.F_nil_0 ();
 		}
 		// set the list field
-		if (this.applySetFunc (this.setFunc, newList)) {
+		if (this.data.setValue (newList)) {
 			while (j > 0) {
 				j--;
 				ListDataEvent lde;
@@ -230,12 +223,12 @@ final class PrimitiveTypeFieldListEditorPanel<T>
 
 	private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
 //		jmercury.list.List_1<T> previousList = (jmercury.list.List_1<T>) this.applyGetFunc (this.getFunc);
-		jmercury.list.List_1<T> previousList = this.applyGetFunc ();
-		T newValue = (T) this.newValueFormattedTextField.getValue ();
-		jmercury.list.List_1.F_cons_2<T> newList;
-		newList = new jmercury.list.List_1.F_cons_2<T> (newValue, previousList);
+		jmercury.list.List_1<F> previousList = this.data.getValue ();
+		F newValue = (F) this.newValueFormattedTextField.getValue ();
+		jmercury.list.List_1.F_cons_2<F> newList;
+		newList = new jmercury.list.List_1.F_cons_2<F> (newValue, previousList);
 		System.out.println ("Adding " + newValue + " to list"); // DEBUG
-		if (this.applySetFunc (this.setFunc, newList)) {
+		if (this.data.setValue (newList)) {
 			ListDataEvent lde;
 			lde = new ListDataEvent (this, ListDataEvent.INTERVAL_ADDED, 0, 1);
 			for (ListDataListener ldl : this.fieldList_ListModel.getListDataListeners ())  {

@@ -6,16 +6,19 @@
 
 package ui.swing;
 
+import data.closure.GetFieldFunc;
+import data.closure.SetFieldFunc;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import jmercury.userInterface;
 import ui.KeyGenerator;
 /**
  *
  * @author  pedro
  */
-public class UIPanel
-	extends DynamicDataPanel<UIPanel>
+public class UIPanel<D>
+	extends DynamicDataPanel<UIPanel, D, DataReference<D> >
 {
 	/**
 	 * Key that this panel is known by the card layout in the {@code UIPanel} dynamic panel.
@@ -27,7 +30,7 @@ public class UIPanel
 	/** Creates new form UIPanel */
 	UIPanel (UIFrame frame)
 	{
-		super (new DataReference (frame), frame);
+		super (new DataReference<D> (frame), frame);
 		//initComponents ();
 		this.key = keyGenerator.nextKey ();
 	}
@@ -45,17 +48,20 @@ public class UIPanel
 	/**
 	 * Handles constructor {@code subdialog(D)}.  When the user clicks the button a new panel appers to edit the same data of this panel.
 	 */
+	@Override
 	public UIPanel handle_subdialog (JButton button, final UIPanel childPanel)
 	{
 		//this.addComponent (button, true, true, false);
 		this.addDynamicComponent (button);
 		ActionListener action;
 		action = new ActionListener () {
+			@Override
 			public void actionPerformed (ActionEvent evt)
 			{
 				childPanel.setData (UIPanel.this.data.getValue ());
 				NavigateAction action = new NavigateAction (UIPanel.this.key)
 				{
+					@Override
 					public boolean perform ()
 					{
 //						UIPanel.this.data = childPanel.data;
@@ -72,22 +78,24 @@ public class UIPanel
 	/**
 	 * Handles constructor {@code editField(get(D,F),set(D,F),dialog(F))}.  Adds a button that shows the panel to edit a field of the data shown by this panel.
 	 */
-	public UIPanel handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel childPanel)
+	@Override
+	public <F> UIPanel handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel<F> childPanel)
 	{
 		//this.addComponent (button, true, true, false);
 		this.addDynamicComponent (button);
 		ActionListener action;
 		action = new ActionListener () {
+			GetFieldFunc<D, F> getFieldFunc = new GetFieldFunc<> (getFunc);
+			SetFieldFunc<D, F> setFieldFunc = new SetFieldFunc<> (setFunc);
+			@Override
 			public void actionPerformed (java.awt.event.ActionEvent evt)
 			{
-				childPanel.setData (applyGetFunc (getFunc));
+				childPanel.setData (UIPanel.this.data.applyGetFieldFunc (getFieldFunc));
 				NavigateAction action = new NavigateAction (UIPanel.this.key) {
+					@Override
 					public boolean perform ()
 					{
-						boolean ok = applySetFunc (setFunc, childPanel.data.getValue ());
-						if (ok) {
-							UIPanel.this.setData (UIPanel.this.data.getValue ());
-						}
+						boolean ok = UIPanel.this.data.applySetFieldFunc (setFieldFunc, childPanel.data.getValue ());
 						return ok;
 					}
 				};

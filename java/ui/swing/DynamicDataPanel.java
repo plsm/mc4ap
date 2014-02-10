@@ -22,7 +22,12 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import ui.MercuryReference;
+import data.MercuryReference;
+import data.AbstractMercuryReference;
+import data.FieldReference;
+import data.closure.GetFieldFunc;
+import data.closure.SetFieldFunc;
+import data.closure.UpdateDataFunc;
 
 /**
  * Base class of swing panels that are initialised during runtime by the mercury backend.  The public methods in this class match the constructors of mercury type {@code dialog(D)}.
@@ -31,8 +36,8 @@ import ui.MercuryReference;
  * 
  * @author Pedro Mariano
  */
-abstract public class DynamicDataPanel<T>
-	extends AbstractDataPanel
+abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R extends AbstractMercuryReference<D> >
+	extends AbstractDataPanel<D, R>
 {
 	/**
 	 * Components that must be populated when the data is set.
@@ -53,19 +58,26 @@ abstract public class DynamicDataPanel<T>
 	/**
 	 * Creates new form DynamicDataPanel
 	 */
-	protected DynamicDataPanel (MercuryReference data, UIFrame frame)
+	protected DynamicDataPanel (R data, UIFrame frame)
 	{
 		super (data, frame);
 		this.initComponents ();
 //		this.add (this.strechSeparator);
-		this.componentsPopulate = new LinkedList<ComponentPopulate> ();
+		this.componentsPopulate = new LinkedList<> ();
 //		this.panels = new LinkedList<DynamicPanel> ();
 //		this.panels.addFirst (new DynamicPanel (this));
 	}
+//	protected DynamicDataPanel (UIFrame frame)
+//	{
+//		super (frame);
+//		this.initComponents ();
+////		this.add (this.strechSeparator);
+//		this.componentsPopulate = new LinkedList<> ();
+//	}
 	/**
 	 * Sets the data shown by this panel and updates the data displayed of any swing components.
 	 */
-	void setData (Object value)
+	void setData (D value)
 	{
 		this.data.setValue (value);
 		this.fireValueChanged ();
@@ -82,9 +94,9 @@ abstract public class DynamicDataPanel<T>
 	 * Construct an inline panel where swing components to edit this {@code UIPanel} Mercury data can be placed.  Inline panels are bordered panels that visually group swing components.
 	 * @return 
 	 */
-	public InlinePanelField newInlinePanelForData (String panelName)
+	public InlinePanelField<D, D> newInlinePanelForData (String panelName)
 	{
-		InlinePanelField result = new InlinePanelField (
+		InlinePanelField<D, D> result = new InlinePanelField<> (
 			this.data,
 			this.frame,
 			this.getUIPanel (),
@@ -98,10 +110,10 @@ abstract public class DynamicDataPanel<T>
 	 * Construct an inline panel where swing components to edit this {@code UIPanel} Mercury data can be placed.  Inline panels are bordered panels that visually group swing components.
 	 * @return 
 	 */
-	public InlinePanelField newInlinePanelForFieldData (String panelName, Object[] getFieldFunc, Object[] setFieldFunc)
+	public <F> InlinePanelField<D, F> newInlinePanelForFieldData (String panelName, Object[] getFieldFunc, Object[] setFieldFunc)
 	{
-		InlinePanelField result = new InlinePanelField (
-			new FieldDataReference (this.frame, this.data, getFieldFunc, setFieldFunc),
+		InlinePanelField<D, F> result = new InlinePanelField<> (
+			new FieldReference<> (this.data, new data.closure.GetFieldFunc<D,F> (getFieldFunc), new data.closure.SetFieldFunc<D,F> (setFieldFunc)),
 			this.frame,
 			this.getUIPanel (),
 			panelName);
@@ -111,22 +123,9 @@ abstract public class DynamicDataPanel<T>
 		//System.out.println ("newInlinePanelForFieldData (" + panelName + ", ...)");
 		return result;
 	}
-	public SelectOneOfPanel newSelectOneOfPanel (String panelName, Object[] selectedItemFunc)
+	public SelectOneOfPanel newSelectOneOfPanel (String panelName, Object[] funcSelectedChoice, Object[] funcSetData)
 	{
-		SelectOneOfPanel result = new SelectOneOfPanel (this.data, this.frame, this.getUIPanel (), panelName, selectedItemFunc);
-		this.componentsPopulate.add (result);
-		//this.addComponent (result, true, true, true);
-		this.addDynamicComponent (result);
-		return result;
-	}
-	public SelectOneOfPanel newSelectOneOfPanel (String panelName, Object[] getFunc, Object[] setFunc, Object[] selectedItemFunc)
-	{
-		SelectOneOfPanel result = new SelectOneOfPanel (
-			new FieldDataReference (frame, this.data, getFunc, setFunc),
-			this.frame,
-			this.getUIPanel (),
-			panelName,
-			selectedItemFunc);
+		SelectOneOfPanel result = new SelectOneOfPanel (this.data, this.frame, this.getUIPanel (), panelName, funcSelectedChoice, funcSetData);
 		this.componentsPopulate.add (result);
 		//this.addComponent (result, true, true, true);
 		this.addDynamicComponent (result);
@@ -230,20 +229,20 @@ abstract public class DynamicDataPanel<T>
 	/**
 	 * Handles constructor {@code di(interfaceData)} from type {@code dialogItem(D)}.  This constructor does not have an associated action.  Therefore we only insert a label in the panel.
 	 */
-	final public T handle_noaction (JLabel label)
+	final public P handle_noaction (JLabel label)
 	{
 		//this.addComponent (label, true, true, true);
 		this.addDynamicComponent (label);
-		return (T) this;
+		return (P) this;
 	}
 	/**
 	 * Handles constructor {@code subdialog(D)}.  When the user clicks the button a new panel appers to edit the same data of this panel.
 	 */
-	abstract public T handle_subdialog (JButton button, final UIPanel childPanel);
+	abstract public P handle_subdialog (JButton button, final UIPanel<D> childPanel);
 	/**
 	 * Handles constructor {@code newValue(T)}.   When the user selects this dialog option, the data takes value {@code T}.
 	 */
-	final public T handle_newValue (JButton button, final Object newValue)
+	final public P handle_newValue (JButton button, final D newValue)
 	{
 		//System.out.println ("UIPanel.handle_newValue");
 		//this.addComponent (button, true, true, true);
@@ -257,40 +256,44 @@ abstract public class DynamicDataPanel<T>
 			}
 		};
 		button.addActionListener (action);
-		return (T) this;
+		return (P) this;
 	}
 	/**
 	 * Handles constructor {@code updateData(func(T)=T)}.  When the user selects this dialog item, the data is updated according to the given function.
 	 */
-	final public T handle_updateData (JButton button, final Object[] setFunc)
+	final public P handle_updateData (JButton button, final Object[] setFunc)
 	{
 		//this.addComponent (button, true, true, true);
 		
 		this.addDynamicComponent (button);
 		ActionListener action;
 		action = new ActionListener () {
+			UpdateDataFunc<D> updateDataFunc = new UpdateDataFunc<> (setFunc);
+			@Override
 			public void actionPerformed (ActionEvent evt)
 			{
-				jmercury.runtime.MethodPtr2 funcMeth = ((jmercury.runtime.MethodPtr2) setFunc[1]);
-				DynamicDataPanel.this.setData (funcMeth.call___0_0 (setFunc, data.getValue ()));
+				DynamicDataPanel.this.setData (updateDataFunc.apply (DynamicDataPanel.this.data.getValue ()));
+//				jmercury.runtime.MethodPtr2 funcMeth = ((jmercury.runtime.MethodPtr2) setFunc[1]);
+//				DynamicDataPanel.this.setData (funcMeth.call___0_0 (setFunc, data.getValue ()));
 			}
 		};
 		button.addActionListener (action);
-		return (T) this;
+		return (P) this;
 	}
 	/**
 	 * Handles constructor {@code editField(get(D,F),set(D,F),dialog(F))}.  Adds a button that shows the panel to edit a field of the data shown by this panel.
 	 */
-	abstract public T handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel childPanel);
+	abstract public <F> P handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel<F> childPanel);
 	/**
 	 * Handles a {@code updateFieldInt(get(D,int), set(D, int))}. Adds a {@code JFormattedTextField} to edit an integer value.
 	 */
-	public T handle_updateFieldInt (JLabel label, Object[] getFunc, Object[] setFunc)
+	public P handle_updateFieldInt (JLabel label, Object[] getFunc, Object[] setFunc)
 	{
 		//this.addComponent (label, true, false, false);
 		
 		FieldCheck<Integer> inputVerifier;
 		inputVerifier = new FieldCheck<Integer> (setFunc) {
+			@Override
 			protected Integer getValue (javax.swing.JFormattedTextField input) throws Exception
 			{
 				try {
@@ -317,12 +320,12 @@ abstract public class DynamicDataPanel<T>
 		this.addDynamicComponents (label, textField);
 		
 		//this.addComponent (textField, false, false, true);
-		return (T) this;
+		return (P) this;
 	}
 	/**
 	 * Handles a {@code updateFieldInt(get(D,string), set(D,string))}. Adds a {@code JFormattedTextField} to edit an integer value.
 	 */
-	public T handle_updateFieldString (JLabel label, Object[] getFunc, Object[] setPred)
+	public P handle_updateFieldString (JLabel label, Object[] getFunc, Object[] setPred)
 	{
 		//this.addComponent (label, true, false, false);
 		
@@ -345,17 +348,18 @@ abstract public class DynamicDataPanel<T>
 		this.addDynamicComponents (label, textField);
 		
 		//this.addComponent (textField, false, false, true);
-		return (T) this;
+		return (P) this;
 	}
 	/**
 	 * Handles a {@code updateFieldFloat(get(D,float), set(D,float))}. Adds a {@code JFormattedTextField} to edit a floating point value.
 	 */
-	public T handle_updateFieldFloat (JLabel label, Object[] getFunc, Object[] setFunc)
+	public P handle_updateFieldFloat (JLabel label, Object[] getFunc, Object[] setFunc)
 	{
 		//this.addComponent (label, true, false, false);
 		
 		FieldCheck<Double> inputVerifier;
 		inputVerifier = new FieldCheck<Double> (setFunc) {
+			@Override
 			protected Double getValue (JFormattedTextField input)
 				throws Exception
 			{
@@ -383,12 +387,12 @@ abstract public class DynamicDataPanel<T>
 		this.addDynamicComponents (label, textField);
 			
 		//this.addComponent (textField, false, false, true);
-		return (T) this;
+		return (P) this;
 	}
 	/**
 	 * Handles a {@code updateFieldFloat(get(D,float), set(D,float))}. Adds a {@code JFormattedTextField} to edit a floating point value.
 	 */
-	public T handle_updateFieldBool (final JCheckBox checkBox, Object[] getFunc, final Object[] setFunc)
+	public P handle_updateFieldBool (final JCheckBox checkBox, Object[] getFunc, final Object[] setFunc)
 	{
 		//this.addComponent (checkBox, true, true, true);
 		//jmercury.runtime.MethodPtr2 funcMeth = ((jmercury.runtime.MethodPtr2) getFunc [1]);
@@ -398,15 +402,17 @@ abstract public class DynamicDataPanel<T>
 			@Override
 			public void actionPerformed (ActionEvent evt)
 			{
-				DynamicDataPanel.this.applySetFunc (setFunc, checkBox.isEnabled () ? jmercury.bool.YES : jmercury.bool.NO);
+				DynamicDataPanel.this.data.applySetFieldFunc (
+					new SetFieldFunc<D,jmercury.bool.Bool_0> (setFunc),
+					checkBox.isEnabled () ? jmercury.bool.YES : jmercury.bool.NO);
 			}
 		};
 		checkBox.addActionListener (action);
 
 		this.componentsPopulate.add (new CheckBoxPopulate (getFunc, checkBox));
-		return (T) this;
+		return (P) this;
 	}
-	public T handle_editListFieldAny (String field, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
+	public P handle_editListFieldAny (String field, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
 		FieldListCellRendererPanel cellRenderer, FieldListCellEditorPanel cellEditor, Object defaultValue)
 	{
 		AnyTypeFieldListEditor listEditor = new AnyTypeFieldListEditor (
@@ -417,7 +423,7 @@ abstract public class DynamicDataPanel<T>
 		this.componentsPopulate.add (listEditor);
 		this.addDynamicComponent (listEditor);
 		//this.addComponent (listEditor, true, true, true);
-		return (T) this;
+		return (P) this;
 	}
 	/**
 	 * Handles a {@code updateListFieldInt(get(D,list(int)),set(D,list(int)))}.
@@ -426,13 +432,16 @@ abstract public class DynamicDataPanel<T>
 	 * @param setFunc
 	 * @return 
 	 */
-	public T handle_updateListFieldInt (String field, Object[] getFunc, Object[] setFunc)
+	public P handle_updateListFieldInt (String field, Object[] getFunc, Object[] setFunc)
 	{
-		PrimitiveTypeFieldListEditorPanel<Integer> listEditor = new PrimitiveTypeFieldListEditorPanel<Integer> (this.data, this.frame, field, getFunc, setFunc, new Integer (0), PrimitiveTypeFieldListEditorPanel.MercuryType.INT);
+		PrimitiveTypeFieldListEditorPanel<D, Integer> listEditor
+			 = new PrimitiveTypeFieldListEditorPanel<> (
+				  this.data, this.frame, field, getFunc, setFunc,
+				  new Integer (0), PrimitiveTypeFieldListEditorPanel.MercuryType.INT);
 		this.componentsPopulate.add (listEditor);
 		this.addDynamicComponent (listEditor);
 		//this.addComponent (listEditor, true, true, true);
-		return (T) this;
+		return (P) this;
 	}
 	/**
 	 * Handles a {@code updateListFieldString(get(D,list(string)),set(D,list(string)))}.
@@ -441,13 +450,16 @@ abstract public class DynamicDataPanel<T>
 	 * @param setFunc
 	 * @return 
 	 */
-	final public T handle_updateListFieldString (String field, Object[] getFunc, Object[] setFunc)
+	final public P handle_updateListFieldString (String field, Object[] getFunc, Object[] setFunc)
 	{
-		PrimitiveTypeFieldListEditorPanel<String> listEditor = new PrimitiveTypeFieldListEditorPanel<String> (this.data, this.frame, field, getFunc, setFunc, new String ("-"), PrimitiveTypeFieldListEditorPanel.MercuryType.STRING);
+		PrimitiveTypeFieldListEditorPanel<D, String> listEditor
+			= new PrimitiveTypeFieldListEditorPanel<> (
+				  this.data, this.frame, field, getFunc, setFunc,
+				  new String ("-"), PrimitiveTypeFieldListEditorPanel.MercuryType.STRING);
 		this.componentsPopulate.add (listEditor);
 		this.addDynamicComponent (listEditor);
 		//this.addComponent (listEditor, true, true, true);
-		return (T) this;
+		return (P) this;
 	}
 	/**
 	 * Handles a {@code updateListFieldFloat(get(D,list(float)),set(D,list(float)))}.
@@ -456,14 +468,17 @@ abstract public class DynamicDataPanel<T>
 	 * @param setFunc
 	 * @return 
 	 */
-	final public T handle_updateListFieldFloat (String field, Object[] getFunc, Object[] setFunc)
+	final public P handle_updateListFieldFloat (String field, Object[] getFunc, Object[] setFunc)
 	{
-		PrimitiveTypeFieldListEditorPanel<Double> listEditor = new PrimitiveTypeFieldListEditorPanel<Double> (this.data, this.frame, field, getFunc, setFunc, new Double (0.001), PrimitiveTypeFieldListEditorPanel.MercuryType.FLOAT);
+		PrimitiveTypeFieldListEditorPanel<D, Double> listEditor
+			= new PrimitiveTypeFieldListEditorPanel<> (
+				this.data, this.frame, field, getFunc, setFunc,
+				new Double (0.001), PrimitiveTypeFieldListEditorPanel.MercuryType.FLOAT);
 		this.componentsPopulate.add (listEditor);
 		
 		this.addDynamicComponent (listEditor);
 		//this.addComponent (listEditor, true, true, true);
-		return (T) this;
+		return (P) this;
 	}
 	
 	//************************************************************
@@ -471,18 +486,18 @@ abstract public class DynamicDataPanel<T>
 	/**
 	 * Represents components that must be populated after new data must be shown by the {@code UIPanel}.
 	 */
-	static private abstract class AbstractComponentPopulate
-		implements ComponentPopulate
+	static private abstract class AbstractComponentPopulate<D, F>
+		implements ComponentPopulate<D>
 	{
-		final Object[] getFunc;
+		final GetFieldFunc<D,F> getFieldFunc;
 		AbstractComponentPopulate (Object[] getFunc)
 		{
-			this.getFunc = getFunc;
+			this.getFieldFunc = new GetFieldFunc<D, F> (getFunc);
 		}
 	}
 
-	static private class FormattedTextFieldPopulate
-		extends AbstractComponentPopulate
+	static private class FormattedTextFieldPopulate<D>
+		extends AbstractComponentPopulate<D, String>
 	{
 		final javax.swing.JFormattedTextField textField;
 		FormattedTextFieldPopulate (Object[] getFunc, javax.swing.JFormattedTextField textField)
@@ -491,13 +506,13 @@ abstract public class DynamicDataPanel<T>
 			this.textField = textField;
 		}
 		@Override
-		public void valueChanged (MercuryReference data)
+		public void valueChanged (MercuryReference<D> data)
 		{
-			this.textField.setValue (data.applyGetFunc (this.getFunc));
+			this.textField.setValue (data.applyGetFieldFunc (this.getFieldFunc));
 		}
 	}
-	static private class TextFieldPopulate
-		extends AbstractComponentPopulate
+	static private class TextFieldPopulate<D>
+		extends AbstractComponentPopulate<D, String>
 	{
 		final javax.swing.JTextField textField;
 		TextFieldPopulate (Object[] getFunc, javax.swing.JTextField textField)
@@ -506,13 +521,13 @@ abstract public class DynamicDataPanel<T>
 			this.textField = textField;
 		}
 		@Override
-		public void valueChanged (MercuryReference data)
+		public void valueChanged (MercuryReference<D> data)
 		{
-			this.textField.setText ((String) data.applyGetFunc (this.getFunc));
+			this.textField.setText (data.applyGetFieldFunc (this.getFieldFunc));
 		}
 	}
-	static private class CheckBoxPopulate
-		extends AbstractComponentPopulate
+	static private class CheckBoxPopulate<D>
+		extends AbstractComponentPopulate<D,jmercury.bool.Bool_0>
 	{
 		final javax.swing.JCheckBox checkbox;
 		CheckBoxPopulate (Object[] getFunc, javax.swing.JCheckBox checkbox)
@@ -521,9 +536,9 @@ abstract public class DynamicDataPanel<T>
 			this.checkbox = checkbox;
 		}
 		@Override
-		public void valueChanged (MercuryReference data)
+		public void valueChanged (MercuryReference<D> data)
 		{
-			this.checkbox.setEnabled (data.applyGetFunc (this.getFunc) == jmercury.bool.YES);
+			this.checkbox.setEnabled (data.applyGetFieldFunc (this.getFieldFunc) == jmercury.bool.YES);
 		}
 	}
 
@@ -539,12 +554,12 @@ abstract public class DynamicDataPanel<T>
 		/**
 		 * Holds the set function used to update a data's field.
 		 */
-		final private java.lang.Object[] funcArray6;
+		final private SetFieldFunc<D, T> setFieldFunc;
 		/**
 		 */
 		private FieldCheck (Object[] setPred)
 		{
-			this.funcArray6 = setPred;
+			this.setFieldFunc = new SetFieldFunc<> (setPred);
 		}
 
 		abstract protected T getValue (javax.swing.JFormattedTextField input)
@@ -575,13 +590,13 @@ abstract public class DynamicDataPanel<T>
 					return false;
 				}
 				if (DynamicDataPanel.this.debug) System.out.println ("Verifying: " + value);//DEBUG
-				return DynamicDataPanel.this.applySetFunc (this.funcArray6, value);
+				return DynamicDataPanel.this.data.applySetFieldFunc (this.setFieldFunc, value);
 			}
 			else if (input instanceof JTextField) {
 				String value;
 				value = ((JTextField) input).getText ();
 				if (DynamicDataPanel.this.debug) System.out.println ("Verifying: " + value);//DEBUG
-				return DynamicDataPanel.this.applySetFunc (this.funcArray6, value);
+				return DynamicDataPanel.this.data.applySetFieldFunc (this.setFieldFunc, (T) value);
 			}
 			else {
 				throw new Error ("Unhandled swing component");

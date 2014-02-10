@@ -1,26 +1,30 @@
 package ui.swing;
 
+import data.AbstractMercuryReference;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
-import ui.MercuryReference;
+import data.closure.GetFieldFunc;
+import data.MercuryReference;
+import data.FieldReference;
+import data.closure.SetFieldFunc;
 
 /**
  * A panel inside some {@code UIPanel} that displays and can be used to edit a field of {@code UIPanel} mercury data reference.
  * 
  * @author Pedro Mariano
  */
-final public class InlinePanelField<D>
-	extends DynamicDataPanel<InlinePanelField>
+final public class InlinePanelField<D1, D2>
+	extends DynamicDataPanel<InlinePanelField<D1, D2>, D2, AbstractMercuryReference<D2> >
 	implements ComponentPopulate
 {
 	/**
 	 * The {@code UIPanel} where this {@code InlinePanelField} is.
 	 */
-	final private UIPanel uipanel;
+	final private UIPanel<D1> uipanel;
 	
-	InlinePanelField (MercuryReference<D> data, UIFrame frame, UIPanel parentPanel, String panelName)
+	InlinePanelField (AbstractMercuryReference<D2> data, UIFrame frame, UIPanel<D1> parentPanel, String panelName)
 	{
 		super (data, frame);
 		this.uipanel = parentPanel;
@@ -28,7 +32,7 @@ final public class InlinePanelField<D>
 //		this.initComponents ();
 	}
 
-	InlinePanelField (MercuryReference data, UIFrame frame, UIPanel parentPanel)
+	InlinePanelField (AbstractMercuryReference<D2> data, UIFrame frame, UIPanel<D1> parentPanel)
 	{
 		super (data, frame);
 		this.uipanel = parentPanel;
@@ -56,7 +60,7 @@ final public class InlinePanelField<D>
    // End of variables declaration//GEN-END:variables
 
 	@Override
-	public InlinePanelField handle_subdialog (JButton button, final UIPanel childPanel)
+	public InlinePanelField handle_subdialog (JButton button, final UIPanel<D2> childPanel)
 	{
 		this.addDynamicComponent (button);
 		ActionListener action;
@@ -81,21 +85,27 @@ final public class InlinePanelField<D>
 	}
 
 	@Override
-	public InlinePanelField handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel childPanel)
+	public <F> InlinePanelField handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel<F> childPanel)
 	{
 		this.addDynamicComponent (button);
 		ActionListener action;
 		action = new ActionListener () {
+			GetFieldFunc<D2, F> getFieldFunc = new GetFieldFunc<> (getFunc);
+			SetFieldFunc<D2, F> setFieldFunc = new SetFieldFunc<> (setFunc);
+			@Override
 			public void actionPerformed (java.awt.event.ActionEvent evt)
 			{
-				childPanel.setData (applyGetFunc (getFunc));
+//				childPanel.setData (applyGetFunc (getFunc));
+				childPanel.setData (InlinePanelField.this.data.applyGetFieldFunc (getFieldFunc));
 				NavigateAction action = new NavigateAction (InlinePanelField.this.getUIPanel ().key) {
+					@Override
 					public boolean perform ()
 					{
-						boolean ok = applySetFunc (setFunc, childPanel.data.getValue ());
-						if (ok) {
-							InlinePanelField.this.setData (InlinePanelField.this.data.getValue ());
-						}
+//						boolean ok = applySetFunc (setFunc, childPanel.data.getValue ());
+						boolean ok = InlinePanelField.this.data.applySetFieldFunc (setFieldFunc, childPanel.data.getValue ());
+//						if (ok) {
+//							InlinePanelField.this.setData (InlinePanelField.this.data.getValue ());
+//						}
 						return ok;
 					}
 				};

@@ -5,6 +5,9 @@
 
 package ui.swing;
 
+import data.FieldReference;
+import data.closure.GetFieldFunc;
+import data.closure.SetFieldFunc;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,14 +20,16 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
+import data.closure.SetFieldListElementFunc;
+import jmercury.userInterface.SetResult_1;
 
 /**
  * Comoponent responsible for editing the elements of a field list.
  * 
  * @author Pedro Mariano
  */
-public class FieldListCellEditorPanel
-	extends DynamicDataPanel<FieldListCellEditorPanel>
+public class FieldListCellEditorPanel<D, F>
+	extends DynamicDataPanel<FieldListCellEditorPanel, F, DataReference<F> >
 	implements
 		TableCellEditor
 {
@@ -44,7 +49,7 @@ public class FieldListCellEditorPanel
 	/**
 	 * The component with the {@code JTable} that uses an instance of this class to display and edit the table elements.
 	 */
-	AnyTypeFieldListEditor supData;
+	AnyTypeFieldListEditor<D, F> supData;
 	
 	transient protected ChangeEvent changeEvent = null;
 	/**
@@ -52,7 +57,7 @@ public class FieldListCellEditorPanel
 	 */
 	FieldListCellEditorPanel (UIFrame frame, UIPanel uipanel, Object[] setFieldListElement)
 	{
-		super (new DataReference (frame), frame);
+		super (new DataReference<F> (frame), frame);
 		this.initComponents ();
 		this.uipanel = uipanel;
 		this.setFieldListElement = setFieldListElement;
@@ -93,7 +98,7 @@ public class FieldListCellEditorPanel
 			this.setForeground (table.getForeground ());
 		}
 		this.rowIndex = row;
-		this.setData (value);
+		this.setData ((F) value);
 		return this;
 	}
 
@@ -126,14 +131,18 @@ public class FieldListCellEditorPanel
 		if (rowIndex == -1)
 			throw new InternalError ("row index is -1");
 		//System.out.print ("FieldListCellRendererPanel.stopCellEditing () = ");//DEBUG
-		jmercury.runtime.MethodPtr4 funcMeth = ((jmercury.runtime.MethodPtr4) this.setFieldListElement [1]);
-		jmercury.maybe.Maybe_error_2 mupdate =
-			(jmercury.maybe.Maybe_error_2) funcMeth.call___0_0 (
-				this.setFieldListElement,
-				this.supData.data.getValue (),
-				this.data.getValue (),
-				new Integer (this.rowIndex + 1));
-		boolean result = this.supData.handle_maybeError (mupdate);
+		SetFieldListElementFunc<D, F> func = new SetFieldListElementFunc<> (this.setFieldListElement);
+		SetResult_1<D> mdata = func.apply (this.supData.data.parent.getValue (), this.data.getValue (), rowIndex + 1);
+		boolean result = this.supData.data.parent.handle_setResult (mdata);
+		
+//		jmercury.runtime.MethodPtr4 funcMeth = ((jmercury.runtime.MethodPtr4) this.setFieldListElement [1]);
+//		jmercury.maybe.Maybe_error_2 mupdate =
+//			(jmercury.maybe.Maybe_error_2) funcMeth.call___0_0 (
+//				this.setFieldListElement,
+//				this.supData.data.getValue (),
+//				this.data.getValue (),
+//				new Integer (this.rowIndex + 1));
+//		boolean result = this.supData.handle_maybeError (mupdate);
 		if (result) {
 			this.rowIndex = -1;
 			//this.data.value = null;
@@ -216,11 +225,13 @@ public class FieldListCellEditorPanel
 		this.addDynamicComponent (button);
 		ActionListener action;
 		action = new ActionListener () {
+			@Override
 			public void actionPerformed (ActionEvent evt)
 			{
 				childPanel.setData (FieldListCellEditorPanel.this.data.getValue ());
 				NavigateAction action = new NavigateAction (FieldListCellEditorPanel.this.uipanel.key)
 				{
+					@Override
 					public boolean perform ()
 					{
 						return true;
@@ -234,23 +245,25 @@ public class FieldListCellEditorPanel
 	}
 
 	@Override
-	public FieldListCellEditorPanel handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel childPanel)
+	public <SF> FieldListCellEditorPanel handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel<SF> childPanel)
 	{
 		//this.addComponent (button, true, true, true);
 		
 		this.addDynamicComponent (button);
 		ActionListener action;
 		action = new ActionListener () {
+			GetFieldFunc<F, SF> getFieldFunc = new GetFieldFunc<> (getFunc);
+			SetFieldFunc<F, SF> setFieldFunc = new SetFieldFunc<> (setFunc);
+			@Override
 			public void actionPerformed (java.awt.event.ActionEvent evt)
 			{
-				childPanel.setData (applyGetFunc (getFunc));
+				childPanel.setData (getFieldFunc.apply (FieldListCellEditorPanel.this.data.getValue ()));
 				NavigateAction action = new NavigateAction (FieldListCellEditorPanel.this.uipanel.key) {
+					@Override
 					public boolean perform ()
 					{
-						boolean ok = applySetFunc (setFunc, childPanel.data.getValue ());
-						if (ok) {
-							FieldListCellEditorPanel.this.setData (FieldListCellEditorPanel.this.data.getValue ());
-						}
+						SetResult_1<F> result = setFieldFunc.apply (FieldListCellEditorPanel.this.data.getValue (), childPanel.data.getValue ());
+						boolean ok = FieldListCellEditorPanel.this.data.handle_setResult (result);
 						return ok;
 					}
 				};

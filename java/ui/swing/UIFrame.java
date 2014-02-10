@@ -5,6 +5,8 @@
 
 package ui.swing;
 
+import data.closure.GetFieldFunc;
+import data.closure.SetFieldFunc;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,8 +26,8 @@ import javax.swing.JOptionPane;
  *
  * @author pedro
  */
-final public class UIFrame
-	extends AbstractDataPanel
+final public class UIFrame<D>
+	extends AbstractDataPanel<D, DataReference<D> >
 	implements WindowListener
 {
 	/**
@@ -47,7 +49,7 @@ final public class UIFrame
 	
 
 	/** Creates new form UIFrame */
-	public UIFrame (String title, Object data)
+	public UIFrame (String title, D data)
 	{
 		super (new DataReference (null, data));
 		this.title = title;
@@ -100,9 +102,9 @@ final public class UIFrame
 	 * 
 	 * @return 
 	 */
-	public UIPanel newUIPanel ()
+	public UIPanel<D> newUIPanel ()
 	{
-		UIPanel result = new UIPanel (frame);
+		UIPanel<D> result = new UIPanel<> (frame);
 		//this.addPanel (result);
 		this.dynamicPanel.add (result, result.key);
 		return result;
@@ -122,7 +124,7 @@ final public class UIFrame
 	 * Adds the given panel to the set of panels that can be shown by pressing one of the buttons in the tool bar.
 	 * @param panel 
 	 */
-	void addPanel (UIPanel panel)
+	void addPanel (UIPanel<D> panel)
 	{
 		this.dynamicPanel.add (panel, panel.key);
 	}
@@ -159,7 +161,7 @@ final public class UIFrame
 		this.toolBar.add (label);
 		return this;
 	}
-	public UIFrame handle_submenu_end ()
+	public UIFrame<D> handle_submenu_end ()
 	{
 		this.toolBar.addSeparator ();
 		return this;
@@ -167,7 +169,7 @@ final public class UIFrame
 	/**
 	 * Handles constructor {@code updateData(func(D)=D)}.  When the user presses the button, the data is updated with the given function.
 	 */
-	public UIFrame handle_updateData (JButton button, final Object[] setFunc)
+	public UIFrame<D> handle_updateData (JButton button, final Object[] setFunc)
 	{
 		//System.out.println ("UIFrame.handle_updateData");
 		ActionListener updateData = new ActionListener () {
@@ -176,7 +178,7 @@ final public class UIFrame
 			{
 				if (UIFrame.this.checkShownPanels ())	{
 					jmercury.runtime.MethodPtr2 funcMeth = ((jmercury.runtime.MethodPtr2) setFunc[1]);
-					data.setValue (funcMeth.call___0_0 (setFunc, data.getValue ()));
+					data.setValue ((D) funcMeth.call___0_0 (setFunc, data.getValue ()));
 				}
 			}
 		};
@@ -187,7 +189,7 @@ final public class UIFrame
 	/**
 	 * Handles constructor {@code updateDataIO(pred(D,D,io.state,io.state))}.  When the user presses the button, the data is updated with the given predicate.  The predicate besides receiving the previous value of the data, also receives the I/O state.
 	 */
-	public UIFrame handle_updateDataIO (JButton button, final Object[] predIO)
+	public UIFrame<D> handle_updateDataIO (JButton button, final Object[] predIO)
 	{
 		ActionListener updateDataIO = new ActionListener () {
 			@Override
@@ -198,7 +200,7 @@ final public class UIFrame
 					java.lang.Object[] result;
 					/** XXX: Hack to pass the IO state */
 					result = (java.lang.Object[]) (funcMeth.call___0_0 (predIO, UIFrame.this.data.getValue (), null));
-					UIFrame.this.data.setValue (result [0]);
+					UIFrame.this.data.setValue ((D) result [0]);
 				}
 			}
 		};
@@ -244,7 +246,7 @@ final public class UIFrame
 		this.toolBar.add (button);
 		return this;
 	}
-	public UIFrame handle_edit (JButton button, final UIPanel panel)
+	public UIFrame<D> handle_edit (JButton button, final UIPanel<D> panel)
 	{
 		//System.out.println ("UIFrame.handle_edit");
 		ActionListener action = new ActionListener () {
@@ -271,24 +273,26 @@ final public class UIFrame
 		this.toolBar.add (button);
 		return this;
 	}
-	public UIFrame handle_edit (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel panel)
+	public <F> UIFrame<D> handle_edit (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel<F> panel)
 	{
 		//System.out.println ("UIFrame.handle_edit");
 		ActionListener action = new ActionListener () {
+			final GetFieldFunc<D, F> getFieldFunc = new GetFieldFunc<> (getFunc);
+			final SetFieldFunc<D, F> setFieldFunc = new SetFieldFunc<> (setFunc);
 			@Override
 			public void actionPerformed (ActionEvent evt)
 			{
 				if (UIFrame.this.checkShownPanels ())	{
 					//System.out.println ("Setting panel " + panel.key + " data to " + UIFrame.this.data.value); //DEBUG
 				
-					panel.setData (UIFrame.this.applyGetFunc (getFunc));
+					panel.setData (UIFrame.this.data.applyGetFieldFunc (getFieldFunc));
 				
 					NavigateAction action;
 					action = new NavigateAction (UIFrame.EMPTY) {
 						@Override
 						public boolean perform ()
 						{
-							return UIFrame.this.applySetFunc (setFunc, panel.data.getValue ());
+							return UIFrame.this.data.applySetFieldFunc (setFieldFunc, panel.data.getValue ());
 						}
 					};
 					UIFrame.this.showPanel (panel.key, action);

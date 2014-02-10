@@ -4,15 +4,14 @@
  */
 package ui.swing;
 
-import java.util.Observer;
-import ui.MercuryReference;
+import data.MercuryReference;
 
 /**
  * Represents a component in a {@code UIPanel} that must be initialised with data or field data.
  * @author pedro
  */
-interface ComponentPopulate
+interface ComponentPopulate<D>
 //	extends Observer
 {
-	void valueChanged (MercuryReference data);
+	void valueChanged (MercuryReference<D> data);
 }

@@ -18,8 +18,8 @@ import javax.swing.event.EventListenerList;
  * 
  * @author Pedro Mariano
  */
-public class FieldListCellRendererPanel
-	extends DynamicDataPanel<FieldListCellRendererPanel>
+public class FieldListCellRendererPanel<D>
+	extends DynamicDataPanel<FieldListCellRendererPanel, D, DataReference<D> >
 	implements
 		TableCellRenderer
 {
@@ -71,7 +71,7 @@ public class FieldListCellRendererPanel
 		else {
 			setBorder (BorderFactory.createEmptyBorder ());
 		}
-		this.setData (value);
+		this.setData ((D) value);
 		return this;
 	}
 

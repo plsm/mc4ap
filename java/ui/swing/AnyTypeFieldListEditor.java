@@ -6,15 +6,16 @@
 package ui.swing;
 
 import java.awt.Dimension;
-import ui.MercuryReference;
+import data.AbstractMercuryReference;
+import data.MercuryReference;
 
 /**
  * This component allows the user to edit a field list of generic type.
  * 
  * @author pedro
  */
-class AnyTypeFieldListEditor<T>
-	extends AbstractFieldListEditorPanel<T>
+class AnyTypeFieldListEditor<D, F>
+	extends AbstractFieldListEditorPanel<D, F>
 	implements ComponentPopulate
 {
 	/**
@@ -24,15 +25,15 @@ class AnyTypeFieldListEditor<T>
 	/**
 	 * Default value used when adding a new element to the list.
 	 */
-	private final T defaultValue;
+	private final F defaultValue;
 	final private FieldList_TableModel fieldList_tableModel;
 
 	/**
 	 * Creates new form AnyTypeFieldListEditor
 	 */
-	AnyTypeFieldListEditor (String fieldName, MercuryReference data, UIFrame frame, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
-			FieldListCellRendererPanel cellRenderer, 
-			FieldListCellEditorPanel cellEditor, T defaultValue)
+	AnyTypeFieldListEditor (String fieldName, AbstractMercuryReference<D> data, UIFrame frame, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
+			FieldListCellRendererPanel<F> cellRenderer, 
+			FieldListCellEditorPanel<D, F> cellEditor, F defaultValue)
 	{
 		super (data, frame, getFunc, setFunc, listSizeFunc, listElementFunc);
 		this.fieldName = fieldName;
@@ -174,9 +175,9 @@ class AnyTypeFieldListEditor<T>
    }// </editor-fold>//GEN-END:initComponents
 
    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-		jmercury.list.List_1<T> previousList = this.applyGetFunc ();
-		jmercury.list.List_1<T> nextList = new jmercury.list.List_1.F_cons_2<T> (this.defaultValue, previousList);
-		this.applySetFunc (nextList);
+		jmercury.list.List_1<F> previousList = this.data.getValue ();
+		jmercury.list.List_1<F> nextList = new jmercury.list.List_1.F_cons_2<F> (this.defaultValue, previousList);
+		this.data.setValue (nextList);
 		this.fieldList_tableModel.fireTableDataChanged ();
 //		System.out.println ("AnyTypeFieldListEditor.addButtonActionPerformed/1");//DEBUG
 //		System.out.println (previousList);         //DEBUG
@@ -187,10 +188,10 @@ class AnyTypeFieldListEditor<T>
    private void dupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dupButtonActionPerformed
 		int index = this.fieldList_table.getSelectedRow ();
 		if (index != -1) {
-			T o = this.applyListElementFunc (index);
-			jmercury.list.List_1<T> previousList = this.applyGetFunc ();
-			jmercury.list.List_1<T> nextList = new jmercury.list.List_1.F_cons_2<T> (o, previousList);
-			this.applySetFunc (nextList);
+			F o = this.applyListElementFunc (index);
+			jmercury.list.List_1<F> previousList = this.data.getValue ();
+			jmercury.list.List_1<F> nextList = new jmercury.list.List_1.F_cons_2<F> (o, previousList);
+			this.data.setValue (nextList);
 			this.fieldList_tableModel.fireTableDataChanged ();
 		}
 		

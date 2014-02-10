@@ -6,7 +6,7 @@
 
 package ui.swing;
 
-import ui.MercuryReference;
+import data.AbstractMercuryReference;
 
 
 /**
@@ -17,8 +17,8 @@ import ui.MercuryReference;
  *
  * @author  Pedro Mariano
  */
-abstract class AbstractFieldListEditorPanel<T>
-	extends AbstractFieldPanel< jmercury.list.List_1<T> >
+abstract class AbstractFieldListEditorPanel<D, F>
+	extends AbstractFieldPanel<D, jmercury.list.List_1<F> >
 {
 //	/**
 //	 * The get function used to get a list field of {@code data}.
@@ -40,7 +40,7 @@ abstract class AbstractFieldListEditorPanel<T>
 	/**
 	 * Creates new form FieldListEditorPanel
 	 */
-	protected AbstractFieldListEditorPanel (MercuryReference data, UIFrame frame, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc)
+	protected AbstractFieldListEditorPanel (AbstractMercuryReference<D> data, UIFrame frame, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc)
 	{
 		super (data, frame, getFunc, setFunc);
 //		this.getFieldListFunc = getFunc;
@@ -83,7 +83,7 @@ abstract class AbstractFieldListEditorPanel<T>
 			return 0;
 		}
 		jmercury.runtime.MethodPtr2 funcMeth = ((jmercury.runtime.MethodPtr2) listSizeFunc [1]);
-		int result = (Integer) funcMeth.call___0_0 (listSizeFunc, applyGetFunc ());
+		int result = (Integer) funcMeth.call___0_0 (listSizeFunc, this.data.getValue ());
 		//System.out.println ("List has " + result + " elements");//DEBUG
 		return result;
 	}
@@ -95,39 +95,39 @@ abstract class AbstractFieldListEditorPanel<T>
 	 * 
 	 * @return The element at the given index in the field list.
 	 */
-	protected T applyListElementFunc (int index)
+	protected F applyListElementFunc (int index)
 	{
 		if (this.data.getValue () == null) {
 			//System.out.println ("AbstractFieldListEditorPanel.applyListSizeFunc(): INVALID STATE");//DEBUG
 			return null;
 		}
 		jmercury.runtime.MethodPtr3 funcMeth = ((jmercury.runtime.MethodPtr3) this.listElementFunc [1]);
-		return (T) funcMeth.call___0_0 (listElementFunc, applyGetFunc (), new Integer (index));
+		return (F) funcMeth.call___0_0 (listElementFunc, this.data.getValue (), new Integer (index));
 		
 	}
 
 	protected boolean deleteElements (int[] selectedValues)
 	{
 		//jmercury.list.List_1<T> previousList = (jmercury.list.List_1<T>) this.applyGetFunc (this.getFunc).value;
-		jmercury.list.List_1<T> previousList = this.applyGetFunc ();
+		jmercury.list.List_1<F> previousList = this.data.getValue ();
 		int i = 0, j = 0;
-		jmercury.list.List_1<T> newList;
+		jmercury.list.List_1<F> newList;
 		newList = new jmercury.list.List_1.F_nil_0 ();
-		jmercury.list.List_1.F_cons_2<T> insert, newInsert;
+		jmercury.list.List_1.F_cons_2<F> insert, newInsert;
 		insert = null;
 		// build the new list of new items
 		while (previousList instanceof jmercury.list.List_1.F_cons_2) {
-			jmercury.list.List_1.F_cons_2<T> cons = (jmercury.list.List_1.F_cons_2) previousList;
+			jmercury.list.List_1.F_cons_2<F> cons = (jmercury.list.List_1.F_cons_2) previousList;
 			if (j < selectedValues.length && i == selectedValues [j]) {
 				j++;
 			}
 			else {
 				if (insert == null) {
-					insert = new jmercury.list.List_1.F_cons_2<T> (cons.F1, null);
+					insert = new jmercury.list.List_1.F_cons_2<F> (cons.F1, null);
 					newList = insert;
 				}
 				else {
-					newInsert = new jmercury.list.List_1.F_cons_2<T> (cons.F1, null);
+					newInsert = new jmercury.list.List_1.F_cons_2<F> (cons.F1, null);
 					insert.F2 = newInsert;
 					insert = newInsert;
 				}
@@ -140,7 +140,7 @@ abstract class AbstractFieldListEditorPanel<T>
 			insert.F2 = new jmercury.list.List_1.F_nil_0 ();
 		}
 		// set the list field
-		return this.applySetFunc (newList);
+		return this.data.setValue (newList);
 	}
 	
 	/** This method is called from within the constructor to
