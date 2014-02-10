@@ -19,7 +19,7 @@ import javax.swing.event.EventListenerList;
  * @author Pedro Mariano
  */
 public class FieldListCellRendererPanel<D>
-	extends DynamicDataPanel<FieldListCellRendererPanel, D, DataReference<D> >
+	extends DynamicDataPanel<FieldListCellRendererPanel<D>, D, DataReference<D> >
 	implements
 		TableCellRenderer
 {

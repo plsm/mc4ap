@@ -29,7 +29,7 @@ import jmercury.userInterface.SetResult_1;
  * @author Pedro Mariano
  */
 public class FieldListCellEditorPanel<D, F>
-	extends DynamicDataPanel<FieldListCellEditorPanel, F, DataReference<F> >
+	extends DynamicDataPanel<FieldListCellEditorPanel<D, F>, F, DataReference<F> >
 	implements
 		TableCellEditor
 {
