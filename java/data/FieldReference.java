@@ -2,31 +2,32 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ui.swing;
+package data;
 
-import ui.MercuryReference;
+import data.closure.GetFieldFunc;
+import data.closure.SetFieldFunc;
+import jmercury.userInterface;
 
 /**
  *
  * @author pedro
  */
-class FieldDataReference<D, F>
-	extends AbstractDataReference<F>
+final public class FieldReference<D, F>
+	extends AbstractMercuryReference<F>
 {
-	final private MercuryReference<D> parent;
+	final public AbstractMercuryReference<D> parent;
 	
 	/**
 	 * The get function used to get the field of {@code parent}.
 	 */
-	final private Object[] getFieldFunc;
+	final private GetFieldFunc<D, F> getFieldFunc;
 	/**
 	 * The set function used to update the field of {@code parent}. The set function returns an instance of {@code maybe_error(T)}.
 	 */
-	final private Object[] setFieldMFunc;
+	final private SetFieldFunc<D, F> setFieldMFunc;
 		
-	FieldDataReference (UIFrame frame, MercuryReference data, Object[] getFunc, Object[] setFunc)
+	public FieldReference (AbstractMercuryReference<D> data, GetFieldFunc<D, F> getFunc, SetFieldFunc<D, F> setFunc)
 	{
-		super (frame);
 		this.parent = data;
 		this.getFieldFunc = getFunc;
 		this.setFieldMFunc = setFunc;
@@ -34,17 +35,39 @@ class FieldDataReference<D, F>
 
 	/**
 	 * Updates a field of {@code data} with the given value.  The set function returns an instance of {@code maybe_error(T)}.  If constructor {@code error(string)} is returned, we show the message in the notification area and disable the ok button.
-	 *
+	 * @return {@code true} if there was no error.
 	 */
 	@Override
-	public void setValue (F value)
+	final public boolean setValue (F value)
 	{
-		this.parent.applySetMFunc (this.setFieldMFunc, value);
+		return this.parent.applySetFieldFunc (this.setFieldMFunc, value);
 	}
 
 	@Override
-	public F getValue ()
+	final public F getValue ()
 	{
-		return (F) parent.applyGetFunc (this.getFieldFunc);
+		return parent.applyGetFieldFunc (this.getFieldFunc);
+	}
+	/**
+	 * 
+	 * @param mdata
+	 * @return {@code true} if there was no error.
+	 */
+	@Override
+	public boolean handle_setResult (userInterface.SetResult_1<F> mdata)
+	{
+		if (mdata instanceof userInterface.SetResult_1.Ok_1) {
+			userInterface.SetResult_1.Ok_1<F> newData = (userInterface.SetResult_1.Ok_1<F>) mdata;
+			this.setValue (newData.F1);
+			return true;
+		}
+		else if (mdata instanceof userInterface.SetResult_1.Error_1) {
+			userInterface.SetResult_1.Error_1<F> error = (userInterface.SetResult_1.Error_1<F>) mdata;
+			this.parent.handle_setResult (new userInterface.SetResult_1.Error_1<D> (error.F1));
+			return false;
+		}
+		else {
+			throw new UnsupportedOperationException ("Unsupported SetResult");
+		}
 	}
 }

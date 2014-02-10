@@ -2,62 +2,42 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ui.swing;
+package data;
 
-import ui.MercuryReference;
+import data.closure.SetFieldFunc;
+import data.closure.GetFieldFunc;
+import jmercury.userInterface.SetResult_1;
 
 /**
  *
  * @author pedro
  */
-abstract class AbstractDataReference<D>
+abstract public class AbstractMercuryReference<D>
 	implements MercuryReference<D>
 {
-	final private UIFrame frame;
-	
-	protected AbstractDataReference (UIFrame frame)
-	{
-		this.frame = frame;
-	}
-	
 	@Override
-	final public Object applyGetFunc (Object[] getFunc)
+	final public <F> F applyGetFieldFunc (GetFieldFunc<D, F> func)
 	{
-		jmercury.runtime.MethodPtr2 funcMeth = ((jmercury.runtime.MethodPtr2) getFunc[1]);
-		return funcMeth.call___0_0 (getFunc, this.getValue ());
+		return func.apply (this.getValue ());
 	}
-
+	/**
+	 * 
+	 * @param <F>
+	 * @param setFunc
+	 * @param field
+	 * @return {@code true} if there was no error.
+	 */
 	@Override
-	final public void applySetFunc (Object[] setFunc, Object newFieldValue)
+	final public <F> boolean applySetFieldFunc (SetFieldFunc<D, F> setFunc, F field)
 	{
-		jmercury.runtime.MethodPtr3 funcMeth = ((jmercury.runtime.MethodPtr3) setFunc[1]);
-		this.setValue ((D) funcMeth.call___0_0 (setFunc, this.getValue (), newFieldValue));
+		return handle_setResult (setFunc.apply (this.getValue (), field));
 	}
-
-	@Override
-	final public boolean applySetMFunc (Object[] setMFunc, Object newFieldValue)
-	{
-		D value = this.getValue ();
-//		if (value != null) {
-			jmercury.runtime.MethodPtr3 funcMeth = ((jmercury.runtime.MethodPtr3) setMFunc[1]);
-			Object mdata = (jmercury.maybe.Maybe_error_2) funcMeth.call___0_0 (setMFunc, value, newFieldValue);
-
-			boolean error = true;
-			if (mdata instanceof jmercury.maybe.Maybe_error_2.Ok_1) {
-				this.setValue ((D) ((jmercury.maybe.Maybe_error_2.Ok_1) mdata).F1);
-				this.frame.messagesLabel.setText (" ");
-				error = false;
-			}
-			else {
-				this.frame.messagesLabel.setText ((String) ((jmercury.maybe.Maybe_error_2.Error_1) mdata).F1);
-			}
-			this.frame.okButton.setEnabled (!error);
-			return !error;
-//		}
-//		else {
-//			this.frame.messagesLabel.setText ("Not initialised");
-//			return false;
-//		}
-	}
-	
+	/**
+	 * Handle a value of type {@code setResult(D)}.  If the value is ok {@code ok(X)} we update the data value this panel references to.  Otherwise, if the value is {@code error(M)} we show the message in the frame notification area.
+	 * 
+	 * @param mdata
+	 * 
+	 * @return True if there was no error.
+	 */
+	abstract public boolean handle_setResult (SetResult_1<D> mdata);
 }

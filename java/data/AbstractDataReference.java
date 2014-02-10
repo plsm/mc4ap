@@ -1,6 +1,5 @@
-package ui.swing;
+package data;
 
-import ui.MercuryReference;
 
 /**
  * Holds the current value of the data shown in some component.
@@ -9,38 +8,27 @@ import ui.MercuryReference;
  * 
  * @author Pedro Mariano
  */
-final class DataReference<T>
-	extends AbstractDataReference<T>
+abstract public class AbstractDataReference<D>
+	extends AbstractMercuryReference<D>
 {
 	/**
 	 * The current value of the data.
 	 */
-	T value;
-	/**
-	 * Construct a data with no value.
-	 */
-	DataReference (UIFrame frame)
-	{
-		this (frame, null);
-	}
-	/**
-	 * Construct a data with the given value.
-	 * 
-	 * @param value 
-	 */
-	DataReference (UIFrame frame, T value)
-	{
-		super (frame);
-		this.value = value;
-	}
+	D value;
 	@Override
-	public T getValue ()
+	final public D getValue ()
 	{
 		return this.value;
 	}
+	/**
+	 * 
+	 * @param newValue
+	 * @return {@code true} if there was no error.
+	 */
 	@Override
-	public void setValue (T newValue)
+	final public boolean setValue (D newValue)
 	{
 		this.value = newValue;
+		return true;
 	}
 }
