@@ -4,35 +4,20 @@
  */
 package ui.swing;
 
-import jmercury.userInterface;
-import data.closure.GetFieldFunc;
 import ui.MercuryReference;
-import data.closure.SetFieldFunc;
 
 /**
  *
  * @author pedro
  */
-abstract class AbstractDataReference__<D>
+abstract class AbstractDataReference<D>
 	implements MercuryReference<D>
 {
 	final private UIFrame frame;
 	
-	protected AbstractDataReference__ (UIFrame frame)
+	protected AbstractDataReference (UIFrame frame)
 	{
 		this.frame = frame;
-	}
-	
-	@Override
-	final public <F> F applyGetFieldFunc (GetFieldFunc<D, F> func)
-	{
-		return func.apply (this.getValue ());
-	}
-	
-	@Override
-	final public <F> boolean applySetFieldFunc (SetFieldFunc<D, F> setFunc, F field)
-	{
-		return handle_setResult (setFunc.apply (this.getValue (), field));
 	}
 	
 	@Override
@@ -75,30 +60,4 @@ abstract class AbstractDataReference__<D>
 //		}
 	}
 	
-	/**
-	 * Handle a value of type {@code setResult(D)}.  If the value is ok {@code ok(X)} we update the data value this panel references to.  Otherwise, if the value is {@code error(M)} we show the message in the frame notification area.
-	 * 
-	 * @param mdata
-	 * @return True if there was no error.
-	 */
-	private boolean handle_setResult (userInterface.SetResult_1<D> mdata)
-	{
-		boolean result;
-		if (mdata instanceof userInterface.SetResult_1.Ok_1) {
-			userInterface.SetResult_1.Ok_1<D> newData = (userInterface.SetResult_1.Ok_1<D>) mdata;
-			this.setValue (newData.F1);
-			this.frame.messagesLabel.setText (" ");
-			result = false;
-		}
-		else if (mdata instanceof userInterface.SetResult_1.Error_1) {
-			userInterface.SetResult_1.Error_1 error = (userInterface.SetResult_1.Error_1) mdata;
-			this.frame.messagesLabel.setText (error.F1);
-			result = true;
-		}
-		else {
-			throw new UnsupportedOperationException ("Unsupported SetResult");
-		}
-		this.frame.okButton.setEnabled (!result);
-		return !result;
-	}
 }
