@@ -18,7 +18,13 @@ abstract public class AbstractMercuryReference<D>
 	@Override
 	final public <F> F applyGetFieldFunc (GetFieldFunc<D, F> func)
 	{
-		return func.apply (this.getValue ());
+		D object = this.getValue ();
+		if (object == null) {
+			return null;
+		}
+		else {
+			return func.apply (object);
+		}
 	}
 	/**
 	 * 
