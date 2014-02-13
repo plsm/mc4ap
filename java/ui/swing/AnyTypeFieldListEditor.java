@@ -14,9 +14,9 @@ import data.MercuryReference;
  * 
  * @author pedro
  */
-class AnyTypeFieldListEditor<D, F>
+final class AnyTypeFieldListEditor<D, F>
 	extends AbstractFieldListEditorPanel<D, F>
-	implements ComponentPopulate
+	implements ComponentPopulate<D>
 {
 	/**
 	 * Field name.  This is used to initalise the panel border.
@@ -40,7 +40,18 @@ class AnyTypeFieldListEditor<D, F>
 		this.defaultValue = defaultValue;
 		this.fieldList_tableModel = new FieldList_TableModel ();
 		initComponents ();
-		this.fieldList_table.setRowHeight (cellRenderer.getPreferredSize ().height + 16);
+		cellEditor.validate ();
+		cellRenderer.validate ();
+		this.fieldList_table.setRowHeight (
+			16 +
+			Math.max (
+				cellRenderer.getSize ().height,
+			Math.max (
+				cellRenderer.getPreferredSize ().height,
+			Math.max (
+				cellEditor.getPreferredSize ().height,
+				cellEditor.getSize ().height
+			))));
 		this.fieldList_table.getTableHeader ().setVisible (false);
 		this.fieldList_table.setDefaultRenderer (Object.class, cellRenderer);
 		this.fieldList_table.setDefaultEditor (Object.class, cellEditor);
@@ -51,6 +62,46 @@ class AnyTypeFieldListEditor<D, F>
 	public void valueChanged (MercuryReference data)
 	{
 		this.fieldList_tableModel.fireTableDataChanged ();
+	}
+
+	@Override
+	public boolean commitValue ()
+	{
+		return true;
+	}
+	
+	private void replaceElement (F value, int index)
+	{
+		System.out.println ("Replacing " + value + " @" + index);
+		jmercury.list.List_1<F> previousList = this.data.getValue ();
+		jmercury.list.List_1<F> newList;
+		newList = new jmercury.list.List_1.F_nil_0 ();
+		jmercury.list.List_1.F_cons_2<F> insert, newInsert;
+		insert = null;
+		while (index > 0) {
+			jmercury.list.List_1.F_cons_2<F> cons = (jmercury.list.List_1.F_cons_2) previousList;
+			index--;
+			if (insert == null) {
+				insert = new jmercury.list.List_1.F_cons_2<F> (cons.F1, null);
+				newList = insert;
+			}
+			else {
+				newInsert = new jmercury.list.List_1.F_cons_2<F> (cons.F1, null);
+				insert.F2 = newInsert;
+				insert = newInsert;
+			}
+			previousList = cons.F2;
+		}
+		jmercury.list.List_1.F_cons_2<F> elementReplace = (jmercury.list.List_1.F_cons_2) previousList;
+		if (insert != null) {
+			// elements were inserted, so put nil constructor
+			insert.F2 = new jmercury.list.List_1.F_cons_2<> (value, elementReplace.F2);
+		}
+		else {
+			newList = new jmercury.list.List_1.F_cons_2<> (value, elementReplace.F2);
+		}
+		// set the list field
+		this.data.setValue (newList);
 	}
 	
 	final private class FieldList_TableModel
@@ -97,6 +148,7 @@ class AnyTypeFieldListEditor<D, F>
 		@Override
 		public void setValueAt (Object aValue, int rowIndex, int columnIndex)
 		{
+			AnyTypeFieldListEditor.this.replaceElement ((F) aValue, rowIndex);
 			//System.out.println ("FieldList_TableModel.setValueAt(Object,int,int)");
 		}
 		
