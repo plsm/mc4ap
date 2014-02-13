@@ -18,7 +18,7 @@ import ui.KeyGenerator;
  * @author  pedro
  */
 public class UIPanel<D>
-	extends DynamicDataPanel<UIPanel, D, DataReference<D> >
+	extends DynamicDataPanel<UIPanel<D>, D, DataReference<D> >
 {
 	/**
 	 * Key that this panel is known by the card layout in the {@code UIPanel} dynamic panel.
@@ -49,7 +49,7 @@ public class UIPanel<D>
 	 * Handles constructor {@code subdialog(D)}.  When the user clicks the button a new panel appers to edit the same data of this panel.
 	 */
 	@Override
-	public UIPanel handle_subdialog (JButton button, final UIPanel childPanel)
+	public UIPanel handle_subdialog (JButton button, final UIPanel<D> childPanel)
 	{
 		//this.addComponent (button, true, true, false);
 		this.addDynamicComponent (button);
@@ -64,8 +64,7 @@ public class UIPanel<D>
 					@Override
 					public boolean perform ()
 					{
-//						UIPanel.this.data = childPanel.data;
-						return true;
+						return UIPanel.this.setData (childPanel.data.getValue ());
 					}
 				};
 				UIPanel.this.frame.showPanel (childPanel.key, action);
