@@ -28,6 +28,9 @@ import data.FieldReference;
 import data.closure.GetFieldFunc;
 import data.closure.SetFieldFunc;
 import data.closure.UpdateDataFunc;
+import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Base class of swing panels that are initialised during runtime by the mercury backend.  The public methods in this class match the constructors of mercury type {@code dialog(D)}.
@@ -53,7 +56,7 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 //	 */
 //	final private Deque<DynamicPanel> panels;
 	
-	transient protected boolean debug = false;
+	transient protected boolean debug = true;
 	private int nextComponentGridY = 0;
 	/**
 	 * Creates new form DynamicDataPanel
@@ -77,10 +80,15 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	/**
 	 * Sets the data shown by this panel and updates the data displayed of any swing components.
 	 */
-	void setData (D value)
+	boolean setData (D value)
 	{
-		this.data.setValue (value);
-		this.fireValueChanged ();
+		if (this.data.setValue (value)) {
+			this.fireValueChanged ();
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 	
 	protected void fireValueChanged ()
@@ -283,7 +291,17 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	/**
 	 * Handles constructor {@code editField(get(D,F),set(D,F),dialog(F))}.  Adds a button that shows the panel to edit a field of the data shown by this panel.
 	 */
-	abstract public <F> P handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel<F> childPanel);
+	public <F> P handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel<F> childPanel)
+	{
+		System.out.println ("BLoooo");
+		System.out.println (this.getClass ().getName ());
+		if (this instanceof InlinePanelField) {
+			InlinePanelField<D, F> ipf = (InlinePanelField) this;
+			ipf.handle_editField (button, getFunc, setFunc, childPanel);
+			return (P) ipf;
+		 }
+		 return null;
+	 }
 	/**
 	 * Handles a {@code updateFieldInt(get(D,int), set(D, int))}. Adds a {@code JFormattedTextField} to edit an integer value.
 	 */
@@ -316,7 +334,7 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		textField.setInputVerifier (inputVerifier);
 		textField.addPropertyChangeListener ("value", inputVerifier);
 
-		this.componentsPopulate.add (new FormattedTextFieldPopulate (getFunc, textField));
+		this.componentsPopulate.add (new FormattedTextFieldPopulate<Integer> (getFunc, setFunc, textField));
 		this.addDynamicComponents (label, textField);
 		
 		//this.addComponent (textField, false, false, true);
@@ -344,7 +362,7 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		textField.setInputVerifier (inputVerifier);
 		textField.addPropertyChangeListener ("value", inputVerifier);
 
-		this.componentsPopulate.add (new TextFieldPopulate (getFunc, textField));
+		this.componentsPopulate.add (new TextFieldPopulate (getFunc, setPred, textField));
 		this.addDynamicComponents (label, textField);
 		
 		//this.addComponent (textField, false, false, true);
@@ -383,7 +401,7 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		textField.setInputVerifier (inputVerifier);
 		textField.addPropertyChangeListener ("value", inputVerifier);
 
-		this.componentsPopulate.add (new FormattedTextFieldPopulate (getFunc, textField));
+		this.componentsPopulate.add (new FormattedTextFieldPopulate<Double> (getFunc, setFunc, textField));
 		this.addDynamicComponents (label, textField);
 			
 		//this.addComponent (textField, false, false, true);
@@ -409,7 +427,7 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		};
 		checkBox.addActionListener (action);
 
-		this.componentsPopulate.add (new CheckBoxPopulate (getFunc, checkBox));
+		this.componentsPopulate.add (new CheckBoxPopulate (getFunc, setFunc, checkBox));
 		return (P) this;
 	}
 	public P handle_editListFieldAny (String field, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
@@ -486,23 +504,25 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	/**
 	 * Represents components that must be populated after new data must be shown by the {@code UIPanel}.
 	 */
-	static private abstract class AbstractComponentPopulate<D, F>
+	private abstract class AbstractComponentPopulate<F>
 		implements ComponentPopulate<D>
 	{
 		final GetFieldFunc<D,F> getFieldFunc;
-		AbstractComponentPopulate (Object[] getFunc)
+		final SetFieldFunc<D,F> setFieldFunc;
+		AbstractComponentPopulate (Object[] getFunc, Object[] setFunc)
 		{
-			this.getFieldFunc = new GetFieldFunc<D, F> (getFunc);
+			this.getFieldFunc = new GetFieldFunc<> (getFunc);
+			this.setFieldFunc = new SetFieldFunc<> (setFunc);
 		}
 	}
 
-	static private class FormattedTextFieldPopulate<D>
-		extends AbstractComponentPopulate<D, String>
+	final private class FormattedTextFieldPopulate<F>
+		extends AbstractComponentPopulate<F>
 	{
 		final javax.swing.JFormattedTextField textField;
-		FormattedTextFieldPopulate (Object[] getFunc, javax.swing.JFormattedTextField textField)
+		FormattedTextFieldPopulate (Object[] getFunc, Object[] setFunc, javax.swing.JFormattedTextField textField)
 		{
-			super (getFunc);
+			super (getFunc, setFunc);
 			this.textField = textField;
 		}
 		@Override
@@ -510,14 +530,25 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		{
 			this.textField.setValue (data.applyGetFieldFunc (this.getFieldFunc));
 		}
+
+		@Override
+		public boolean commitValue ()
+		{
+			try {
+				this.textField.commitEdit ();
+			} catch (ParseException ex) {
+				return false;
+			}
+			return DynamicDataPanel.this.data.applySetFieldFunc (setFieldFunc, (F) this.textField.getValue ());
+		}
 	}
-	static private class TextFieldPopulate<D>
-		extends AbstractComponentPopulate<D, String>
+	final private class TextFieldPopulate
+		extends AbstractComponentPopulate<String>
 	{
 		final javax.swing.JTextField textField;
-		TextFieldPopulate (Object[] getFunc, javax.swing.JTextField textField)
+		TextFieldPopulate (Object[] getFunc, Object[] setFunc, javax.swing.JTextField textField)
 		{
-			super (getFunc);
+			super (getFunc, setFunc);
 			this.textField = textField;
 		}
 		@Override
@@ -525,20 +556,33 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		{
 			this.textField.setText (data.applyGetFieldFunc (this.getFieldFunc));
 		}
+
+		@Override
+		public boolean commitValue ()
+		{
+			return DynamicDataPanel.this.data.applySetFieldFunc (setFieldFunc, (String) this.textField.getText ());
+		}
 	}
-	static private class CheckBoxPopulate<D>
-		extends AbstractComponentPopulate<D,jmercury.bool.Bool_0>
+	final private class CheckBoxPopulate
+		extends AbstractComponentPopulate<jmercury.bool.Bool_0>
 	{
 		final javax.swing.JCheckBox checkbox;
-		CheckBoxPopulate (Object[] getFunc, javax.swing.JCheckBox checkbox)
+		CheckBoxPopulate (Object[] getFunc, Object[] setFunc, javax.swing.JCheckBox checkbox)
 		{
-			super (getFunc);
+			super (getFunc, setFunc);
 			this.checkbox = checkbox;
 		}
 		@Override
 		public void valueChanged (MercuryReference<D> data)
 		{
 			this.checkbox.setEnabled (data.applyGetFieldFunc (this.getFieldFunc) == jmercury.bool.YES);
+		}
+
+		@Override
+		public boolean commitValue ()
+		{
+			jmercury.bool.Bool_0 value = (this.checkbox.isSelected () ? jmercury.bool.YES : jmercury.bool.NO);
+			return DynamicDataPanel.this.data.applySetFieldFunc (setFieldFunc, value);
 		}
 	}
 
@@ -603,72 +647,72 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 			}
 		}
 	}
-	/**
-	 * Information about the panel currently being initialised.  All panels have a grid bag layout.
-	 * 
-	 */
-	static private class DynamicPanel
-	{
-		/**
-		 * Vertical position of the next component to insert in this panel.
-		 */
-		private int nextComponentGridY = 0;
-		
-		final private JPanel panel;
-		/**
-		 * Construct the instance for the enclosing {@code DynamicDataPanel} instance.
-		 * 
-		 * @param firstPanel 
-		 */
-		DynamicPanel (DynamicDataPanel firstPanel)
-		{
-			this.panel = firstPanel;
-		}
-		/**
-		 * Construct a sub panel of a {@code DynamicDataPanel} instance.
-		 * @param title 
-		 */
-		DynamicPanel (String title)
-		{
-			this.panel = new JPanel (new GridBagLayout ());
-			this.panel.setBorder (javax.swing.BorderFactory.createTitledBorder (title));
-		}
-		/**
-		 * Adds the given component to this panel.
-		 * @param component The component to be added.
-		 * @param newRow Whether the new component starts a new row
-		 * @param fillRow  whether the new component fills two cells of the row
-		 */
-		private void add (JComponent component, boolean newRow, boolean fillRow)
-		{
-			this.panel.add (component, this.nextGridBagConstraints (newRow, fillRow));
-		}
-		/**
-		 * Return the next grid bag constraints to be used with the component that is going to be added to this panel.
-		 * @param newRow indicates if a new row should be added to this panel.
-		 * @param fillRow indicates if the component should occupy two grid cells in this panel.
-		 */
-		private java.awt.GridBagConstraints nextGridBagConstraints (boolean newRow, boolean fillRow)
-		{
-			java.awt.GridBagConstraints gridBagConstraints;
-			if (newRow) {
-				this.nextComponentGridY++;
-			}
-			gridBagConstraints = new java.awt.GridBagConstraints ();
-			gridBagConstraints.gridy = this.nextComponentGridY;
-			if (fillRow) {
-				gridBagConstraints.gridx = 0;
-				gridBagConstraints.gridwidth = 2;
-			}
-			else {
-				gridBagConstraints.gridx = java.awt.GridBagConstraints.RELATIVE;
-			}
-			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			gridBagConstraints.insets = DynamicDataPanel.defaultInsets;
-			return gridBagConstraints;
-		}
-	}
+//	/**
+//	 * Information about the panel currently being initialised.  All panels have a grid bag layout.
+//	 * 
+//	 */
+//	static private class DynamicPanel
+//	{
+//		/**
+//		 * Vertical position of the next component to insert in this panel.
+//		 */
+//		private int nextComponentGridY = 0;
+//		
+//		final private JPanel panel;
+//		/**
+//		 * Construct the instance for the enclosing {@code DynamicDataPanel} instance.
+//		 * 
+//		 * @param firstPanel 
+//		 */
+//		DynamicPanel (DynamicDataPanel firstPanel)
+//		{
+//			this.panel = firstPanel;
+//		}
+//		/**
+//		 * Construct a sub panel of a {@code DynamicDataPanel} instance.
+//		 * @param title 
+//		 */
+//		DynamicPanel (String title)
+//		{
+//			this.panel = new JPanel (new GridBagLayout ());
+//			this.panel.setBorder (javax.swing.BorderFactory.createTitledBorder (title));
+//		}
+//		/**
+//		 * Adds the given component to this panel.
+//		 * @param component The component to be added.
+//		 * @param newRow Whether the new component starts a new row
+//		 * @param fillRow  whether the new component fills two cells of the row
+//		 */
+//		private void add (JComponent component, boolean newRow, boolean fillRow)
+//		{
+//			this.panel.add (component, this.nextGridBagConstraints (newRow, fillRow));
+//		}
+//		/**
+//		 * Return the next grid bag constraints to be used with the component that is going to be added to this panel.
+//		 * @param newRow indicates if a new row should be added to this panel.
+//		 * @param fillRow indicates if the component should occupy two grid cells in this panel.
+//		 */
+//		private java.awt.GridBagConstraints nextGridBagConstraints (boolean newRow, boolean fillRow)
+//		{
+//			java.awt.GridBagConstraints gridBagConstraints;
+//			if (newRow) {
+//				this.nextComponentGridY++;
+//			}
+//			gridBagConstraints = new java.awt.GridBagConstraints ();
+//			gridBagConstraints.gridy = this.nextComponentGridY;
+//			if (fillRow) {
+//				gridBagConstraints.gridx = 0;
+//				gridBagConstraints.gridwidth = 2;
+//			}
+//			else {
+//				gridBagConstraints.gridx = java.awt.GridBagConstraints.RELATIVE;
+//			}
+//			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+//			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+//			gridBagConstraints.insets = DynamicDataPanel.defaultInsets;
+//			return gridBagConstraints;
+//		}
+//	}
 /*
  * 
 		Container parent = this.getParent ();
