@@ -14,4 +14,9 @@ interface ComponentPopulate<D>
 //	extends Observer
 {
 	void valueChanged (MercuryReference<D> data);
+	/**
+	 * This method is invoked when the panel where this component is located is going to close and we have to the tell the component to commit its value.
+	 * @return {@code true} if the component was able to commit its value.
+	 */
+	boolean commitValue ();
 }
