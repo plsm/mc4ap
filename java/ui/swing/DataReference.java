@@ -13,7 +13,7 @@ import jmercury.userInterface.SetResult_1;
 final class DataReference<D>
 	extends AbstractDataReference<D>
 {
-	final UIFrame frame;
+	UIFrame frame;
 	/**
 	 * Construct a data with no value.
 	 */
