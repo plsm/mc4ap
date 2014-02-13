@@ -46,6 +46,17 @@ final public class InlinePanelField<D1, D2>
 		}
 	}
 
+	@Override
+	public boolean commitValue ()
+	{
+		for (ComponentPopulate cp : this.componentsPopulate) {
+			if (!cp.commitValue ()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
@@ -72,8 +83,7 @@ final public class InlinePanelField<D1, D2>
 				{
 					public boolean perform ()
 					{
-//						UIPanel.this.data = childPanel.data;
-						return true;
+						return InlinePanelField.this.setData (childPanel.data.getValue ());
 					}
 				};
 				InlinePanelField.this.frame.showPanel (childPanel.key, action);
