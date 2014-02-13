@@ -128,9 +128,14 @@ public class FieldListCellEditorPanel<D, F>
 	@Override
 	public boolean stopCellEditing ()
 	{
+		for (ComponentPopulate cp : this.componentsPopulate) {
+			if (!cp.commitValue ()) {
+				return false;
+			}
+		}
 		if (rowIndex == -1)
 			throw new InternalError ("row index is -1");
-		//System.out.print ("FieldListCellRendererPanel.stopCellEditing () = ");//DEBUG
+		System.out.println ("FieldListCellRendererPanel.stopCellEditing () = ");//DEBUG
 		SetFieldListElementFunc<D, F> func = new SetFieldListElementFunc<> (this.setFieldListElement);
 		SetResult_1<D> mdata = func.apply (this.supData.data.parent.getValue (), this.data.getValue (), rowIndex + 1);
 		boolean result = this.supData.data.parent.handle_setResult (mdata);
@@ -219,7 +224,7 @@ public class FieldListCellEditorPanel<D, F>
     }
 
 	@Override
-	public FieldListCellEditorPanel handle_subdialog (JButton button, final UIPanel childPanel)
+	public FieldListCellEditorPanel handle_subdialog (JButton button, final UIPanel<F> childPanel)
 	{
 		//this.addComponent (button, true, true, true);
 		this.addDynamicComponent (button);
@@ -234,7 +239,7 @@ public class FieldListCellEditorPanel<D, F>
 					@Override
 					public boolean perform ()
 					{
-						return true;
+						return FieldListCellEditorPanel.this.setData (childPanel.data.getValue ());
 					}
 				};
 				FieldListCellEditorPanel.this.frame.showPanel (childPanel.key, action);
