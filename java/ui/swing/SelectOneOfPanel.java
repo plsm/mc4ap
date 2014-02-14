@@ -23,15 +23,16 @@ import java.util.Vector;
 import javax.swing.AbstractButton;
 import javax.swing.JRadioButton;
 import jmercury.maybe.Maybe_1;
+import jmercury.userInterface;
 import jmercury.userInterface.CurrentChoice_1;
 
 /**
  * A panel that presents a set of radio buttons.
  * @author pedro
  */
-public class SelectOneOfPanel<D, F>
+final public class SelectOneOfPanel<D, F>
 	extends AbstractDataPanel<D, AbstractMercuryReference<D> >
-	implements ComponentPopulate
+	implements ComponentPopulate<D>
 {
 
 	/**
@@ -89,7 +90,19 @@ public class SelectOneOfPanel<D, F>
 			final int index = SelectOneOfPanel.this.numberRadioButtons;
 			@Override
 			public boolean handle_setResult (SetResult_1<F> mdata) {
-				throw new UnsupportedOperationException ("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+				if (mdata instanceof userInterface.SetResult_1.Ok_1) {
+					userInterface.SetResult_1.Ok_1<F> newData = (userInterface.SetResult_1.Ok_1<F>) mdata;
+					this.setValue (newData.F1);
+					return true;
+				}
+				else if (mdata instanceof userInterface.SetResult_1.Error_1) {
+					userInterface.SetResult_1.Error_1<F> error = (userInterface.SetResult_1.Error_1<F>) mdata;
+					SelectOneOfPanel.this.data.handle_setResult (new userInterface.SetResult_1.Error_1<D> (error.F1));
+					return false;
+				}
+				else {
+					throw new UnsupportedOperationException ("Unsupported SetResult");
+				}
 			}
 
 			@Override
@@ -162,7 +175,7 @@ public class SelectOneOfPanel<D, F>
 					SetResult_1.Ok_1<SelectChoice_2<D, F> > ok = (SetResult_1.Ok_1<SelectChoice_2<D, F> >) object;
 					CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
 					cl.show (SelectOneOfPanel.this.dialogsPanel, key);
-					panel.data.setValue (ok.F1.field);
+					panel.setData (ok.F1.field);
 					SelectOneOfPanel.this.data.setValue (ok.F1.data);
 				}
 				else if (object instanceof SetResult_1.Error_1) {
@@ -251,18 +264,16 @@ public class SelectOneOfPanel<D, F>
 	 * @param dummy
 	 */
 	@Override
-	public void valueChanged (MercuryReference dummy)
+	public void valueChanged (MercuryReference<D> dummy)
 	{
-		
-		this.selectedChoiceFunc.apply (this.data.getValue ());
-		Maybe_1<CurrentChoice_1<F> > msc = this.selectedChoiceFunc.apply (this.data.getValue ());
+		Maybe_1<CurrentChoice_1<F> > msc = this.selectedChoiceFunc.apply (dummy.getValue ());
 		if (msc instanceof Maybe_1.Yes_1) {
 			Maybe_1.Yes_1<CurrentChoice_1<F> > yes = (Maybe_1.Yes_1<CurrentChoice_1<F> >) msc;
 			ButtonPanelInfo bpi = this.buttonPanelInfo.get (yes.F1.F1);
 			bpi.button.setSelected (true);
 			CardLayout cl = (CardLayout) (this.dialogsPanel.getLayout ());
 			if (bpi.panel != null) {
-				bpi.panel.data.setValue (yes.F1.F2);
+				bpi.panel.setData (yes.F1.F2);
 				cl.show (this.dialogsPanel, bpi.key);
 			}
 			else {
@@ -274,6 +285,17 @@ public class SelectOneOfPanel<D, F>
 			CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
 			cl.show (SelectOneOfPanel.this.dialogsPanel, EMPTY);
 		}
+	}
+
+	@Override
+	public boolean commitValue ()
+	{
+		for (ButtonPanelInfo bpi : this.buttonPanelInfo) {
+			if (!bpi.panel.commitValue ()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	
