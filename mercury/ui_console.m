@@ -253,16 +253,13 @@ handleDialogAction(_Navigation, di(_DialogInterfaceData, DialogAction), _, Data,
 	DialogAction = newValue(Data).
 
 handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO) :-
-	DialogAction = selectOneOf(options(FuncSelectedIndex, ListChoices)),
+	DialogAction = selectOneOf(FuncSelectedChoice, FuncSelectChoice, FuncSetData, ListChoices),
+	FuncSelectedChoice(!.Data) = MCurrentChoice,
 	MapToString =
 	(pred(CI::in, S::out, Idx::in, NextIdx::out) is det :-
 		NextIdx = Idx + 1,
-		(
-			CI = ci(ChoiceItemInterfaceData, _, _)
-			;
-			CI = ci(ChoiceItemInterfaceData, _)
-		),
-		S1 = (if yes(Idx) = FuncSelectedIndex(!.Data) then "(*)" else "( )"),
+		CI = ci(ChoiceItemInterfaceData, _),
+		S1 = (if MCurrentChoice = yes(CurrentChoice), CurrentChoice = cc(Idx, _) then "(*)" else "( )"),
 		(
 			ChoiceItemInterfaceData = label(Option),
 			S2 = Option
@@ -273,114 +270,31 @@ handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO
 	printList(nothing, ListStrings, nextNavigation(Navigation, DialogInterfaceData), !IO),
 	askActionUser(list.length(ListStrings), SelectedAction, !IO),
 	(if
-		SelectedAction > 0
+		SelectedAction > 0,
+		FuncSelectChoice(!.Data, SelectedAction - 1) = SelectChoice
 	then
-		list.det_split_list(SelectedAction - 1, ListChoices, Start, End),
+		SelectChoice = error(Msg),
+		io.print(Msg, !IO),
+		io.nl(!IO),
+		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)
+		;
+		SelectChoice = ok(sc(NextData, Field)),
+		list.det_split_list(SelectedAction - 1, ListChoices, _Start, End),
 		ChoiceItem = list.det_head(End),
+		ChoiceItem = ci(ValueInterfaceData, Dialog),
 		(
-			ChoiceItem = ci(ValueInterfaceData, Value, Dialog),
-			(
-				Dialog = [],
-				!:Data = Value
-				;
-				Dialog = [_|_],
-				(if
-					FuncSelectedIndex(!.Data) = yes(SelectedAction - 1)
-				then
-					showDialog(Dialog, nextNavigation(Navigation, ValueInterfaceData), !Data, !IO)
-				else
-					showDialog(Dialog, nextNavigation(Navigation, ValueInterfaceData), Value, !:Data, !IO)
-				)
-			)
+			Dialog = [],
+			!:Data = NextData
 			;
-			ChoiceItem = ci(ValueInterfaceData, Dialog),
-			(
-				Dialog = []
-				;
-				Dialog = [_|_],
-				(if
-					FuncSelectedIndex(!.Data) = yes(SelectedAction - 1)
-				then
-					showDialog(Dialog, nextNavigation(Navigation, ValueInterfaceData), !Data, !IO)
-				else
-					true
-				)
-			)
+			Dialog = [_|_],
+			showDialog(Dialog, nextNavigation(Navigation, ValueInterfaceData), Field, NextField, !IO),
+			handleResult(FuncSetData(NextData, NextField), NextData, !:Data, !IO)
 		)
 	else
-		true
+		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)
 	)
 	.
 
-handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO) :-
-	DialogAction = selectOneOf(GetFunc, SetFunc, options(FuncSelectedIndex, ListChoices)),
-	MapToString =
-	(pred(CI::in, S::out, Idx::in, NextIdx::out) is det :-
-		NextIdx = Idx + 1,
-		(
-			CI = ci(ChoiceItemInterfaceData, _, _)
-			;
-			CI = ci(ChoiceItemInterfaceData, _)
-		),
-		S1 = (if yes(Idx) = FuncSelectedIndex(GetFunc(!.Data)) then "(*)" else "( )"),
-		(
-			ChoiceItemInterfaceData = label(Option),
-			S2 = Option
-		),
-		S = S1 ++ " " ++ S2
-	),
-	list.map_foldl(MapToString, ListChoices, ListStrings, 0, _),
-	printList(nothing, ListStrings, nextNavigation(Navigation, DialogInterfaceData), !IO),
-	askActionUser(list.length(ListStrings), SelectedAction, !IO),
-	(if
-		SelectedAction > 0
-	then
-		list.det_split_list(SelectedAction - 1, ListChoices, Start, End),
-		ChoiceItem = list.det_head(End),
-		(
-			ChoiceItem = ci(ValueInterfaceData, AValue, Dialog),
-			(
-				Dialog = [],
-				MNextValue = yes(AValue)
-				;
-				Dialog = [_|_],
-				(if
-					FuncSelectedIndex(GetFunc(!.Data)) = yes(SelectedAction - 1)
-				then
-					showDialog(Dialog, nextNavigation(Navigation, ValueInterfaceData), GetFunc(!.Data), NextValue, !IO)
-				else
-					showDialog(Dialog, nextNavigation(Navigation, ValueInterfaceData), AValue, NextValue, !IO)
-				),
-				MNextValue = yes(NextValue)
-			)
-			;
-			ChoiceItem = ci(ValueInterfaceData, Dialog),
-			(
-				Dialog = [],
-				MNextValue = no
-				;
-				Dialog = [_|_],
-				(if
-					FuncSelectedIndex(GetFunc(!.Data)) = yes(SelectedAction - 1)
-				then
-					showDialog(Dialog, nextNavigation(Navigation, ValueInterfaceData), GetFunc(!.Data), NextValue, !IO),
-					MNextValue = yes(NextValue)
-				else
-					MNextValue = no
-				)
-			)
-		),
-		(
-			MNextValue = yes(NV),
-			SetFunc(!.Data, NV) = MData,
-			handleResult(MData, !Data, !IO)
-			;
-			MNextValue = no
-		)
-	else
-		true
-	)
-	.
 
 	
 :- pred readValueForList(pred(string, T), navigation, maybe(T), io.state, io.state).
@@ -498,7 +412,7 @@ handleEditDeleteListValue(Navigation, MapString, EditListValue, Value, Result, !
 /**
  * Handles the result of setting the new value of the data after the user edited some field.
  */
-:- pred handleResult(maybe_error(D), D, D, io.state, io.state).
+:- pred handleResult(setResult(D), D, D, io.state, io.state).
 :- mode handleResult(in, in, out, di, uo) is det.
 
 handleResult(ok(Data), _, Data, !IO).

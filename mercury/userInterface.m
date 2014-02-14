@@ -134,22 +134,44 @@
 	updateListFieldFloat(  get(D, list(float)),  set(D, list(float))            ) ;
 
 	some [F]
-	selectOneOf(get(D, F), set(D, F), options(F)) ;
-	selectOneOf(options(D))
+	selectOneOf(
+		func(D) = maybe(currentChoice(F)),
+		func(D, int) = setResult(selectChoice(D, F)),
+		set(D, F),
+		list(choiceItem(F))
+	)
 	.
 
-:- type options(D) --->
-	options(func(D) = maybe(int), list(choiceItem(D))).
+/**
+ * Represents the current choice of a mutually exclusive options.  When the
+ * user interface is displayed we must known which is the current choice to
+ * tell the user and to fill any user interface components associated with
+ * that choice.
+  
+ */
+:- type currentChoice(F) --->
+	cc(int, F).
+
+/**
+ * After the user selects one of the mutually exclusive options, we must
+ * obtain the new value of the data and the field.  The field is used to
+ * update any interface components associated with that choice.
+  
+ */
+:- type selectChoice(D, F) --->
+	sc(
+		data  :: D,
+		field :: F
+	).
 
 /**
  * Represents an option that is presented to the user by dialog item {@code
- * oneOf/2}.  This constructor is used to display a set of mutually
+ * selectOneOf/4}.  This constructor is used to display a set of mutually
  * exclusive options.
   
  */
-:- type choiceItem(D) --->
-	ci(interfaceData, list(dialogItem(D))) ;
-	ci(interfaceData, D, list(dialogItem(D))).
+:- type choiceItem(F) --->
+	ci(interfaceData, list(dialogItem(F))).
 
 /*
 :- inst dialog(D) == bound(dialog(list_skel(dialogItem(D)))).
@@ -180,7 +202,9 @@
 
 :- type set(D) == (func(D) = setResult(D)).
 
-:- type setResult(D) == maybe_error(D).
+:- type setResult(D) --->
+	ok(D) ;
+	error(string).
 
 /*
 :- inst get(D) == (func(in(D)) = out is det).

@@ -35,7 +35,7 @@
 
 :- type ddpanel(D).
 
-:- pragma foreign_type("Java", ddpanel(D), "ui.swing.DynamicDataPanel<? extends ui.swing.DynamicDataPanel>").
+:- pragma foreign_type("Java", ddpanel(D), "ui.swing.DynamicDataPanel").
 
 :- type soopanel(D).
 
@@ -220,7 +220,7 @@ setMao(Debug, Maos, Index) = Result :-
  * maybe_error(D)} value to indicate if the replace is successful or not.
   
  */
-:- pred initCellEditor(ddpanel(E), func(F, E, int) = maybe_error(F), ddpanel(F)).
+:- pred initCellEditor(ddpanel(E), func(F, E, int) = setResult(F), ddpanel(F)).
 :- mode initCellEditor(uo, in, ui) is det.
 
 :- pragma foreign_proc(
@@ -236,45 +236,46 @@ setMao(Debug, Maos, Index) = Result :-
 	"
 	).
 
-:- pred initSelectOneOfPanel(soopanel(D), string, func(D) = maybe(int), ddpanel(D), ddpanel(D)).
-:- mode initSelectOneOfPanel(uo, in, in, di, uo) is det.
+:- pred initSelectOneOfPanel(soopanel(D), string, func(D) = maybe(currentChoice(F)), set(D, F), ddpanel(D), ddpanel(D)).
+:- mode initSelectOneOfPanel(uo, in, in, in, di, uo) is det.
 
 :- pragma foreign_proc(
 	"Java",
 	initSelectOneOfPanel(
 		Result::uo,
 		PanelName::in,
-		FuncSelectedIndex::in,
+		FuncSelectedChoice::in,
+		FuncSelectChoice::in,
 		PanelDI::di,
 		PanelUO::uo),
 	[will_not_call_mercury, promise_pure],
 	"
-	Result = PanelDI.newSelectOneOfPanel (PanelName, FuncSelectedIndex);
+	Result = PanelDI.newSelectOneOfPanel (PanelName, FuncSelectedChoice, FuncSelectChoice);
 	PanelUO = PanelDI;
 	"
 	).
 
-:- pred initSelectOneOfPanel(soopanel(F), string, get(D, F), set(D, F), func(F) = maybe(int), ddpanel(D), ddpanel(D)).
-:- mode initSelectOneOfPanel(uo, in, in, in, in, di, uo) is det.
+% :- pred initSelectOneOfPanel(soopanel(F), string, get(D, F), set(D, F), func(F) = maybe(int), ddpanel(D), ddpanel(D)).
+% :- mode initSelectOneOfPanel(uo, in, in, in, in, di, uo) is det.
 
-:- pragma foreign_proc(
-	"Java",
-	initSelectOneOfPanel(
-		Result::uo,
-		PanelName::in,
-		GetFunc::in,
-		SetFunc::in,
-		FuncSelectedIndex::in,
-		PanelDI::di,
-		PanelUO::uo),
-	[will_not_call_mercury, promise_pure],
-	"
-	Result = PanelDI.newSelectOneOfPanel (PanelName, GetFunc, SetFunc, FuncSelectedIndex);
-	PanelUO = PanelDI;
-	"
-	).
+% :- pragma foreign_proc(
+% 	"Java",
+% 	initSelectOneOfPanel(
+% 		Result::uo,
+% 		PanelName::in,
+% 		GetFunc::in,
+% 		SetFunc::in,
+% 		FuncSelectedIndex::in,
+% 		PanelDI::di,
+% 		PanelUO::uo),
+% 	[will_not_call_mercury, promise_pure],
+% 	"
+% 	Result = PanelDI.newSelectOneOfPanel (PanelName, GetFunc, SetFunc, FuncSelectedIndex);
+% 	PanelUO = PanelDI;
+% 	"
+% 	).
 
-:- pred initInlinePanelForChoice(ddpanel(D), soopanel(D), soopanel(D)).
+:- pred initInlinePanelForChoice(ddpanel(F), soopanel(D), soopanel(D)).
 :- mode initInlinePanelForChoice(uo, di, uo) is det.
 
 :- pragma foreign_proc(
@@ -288,6 +289,7 @@ setMao(Debug, Maos, Index) = Result :-
 	PanelUO = PanelDI;
 	"
 	).
+
 :- pred initInlinePanelForData(ddpanel(D), string, ddpanel(D), ddpanel(D)).
 :- mode initInlinePanelForData(uo, in, di, uo) is det.
 
@@ -555,6 +557,7 @@ buildDialogForm(Flat, di(InterfaceData, Action), !Frame, !Panel) :-
 		ListDialogItems = [di(InterfaceData, Action)],
 		list.foldl2(trace_buildDialogForm(no), ListDialogItems, !Frame, InitPanel, ShowPanel),
 		handle_subdialog(createButton(InterfaceData), ShowPanel, !Panel)
+%		handle_editField_panel(createButton(InterfaceData), GetFunc, SetFunc, ShowPanel, !Panel)
 		;
 		Flat = no,
 		SetFieldListElement = setFieldListElement(GetFunc, SetFunc),
@@ -581,15 +584,9 @@ buildDialogForm(Flat, di(InterfaceData, Action), !Frame, !Panel) :-
 	Action = updateListFieldFloat(GetFunc, SetFunc),
 	handle_updateListFieldFloat(toString(InterfaceData), GetFunc, SetFunc, !Panel)
 	;
-	Action = selectOneOf(options(GetChoice, ListChoiceItems)),
-	initSelectOneOfPanel(InitSelectOneOfPanel, toString(InterfaceData), GetChoice, !Panel),
-	list.foldl2(buildSelectOneOfPanel, ListChoiceItems, InitSelectOneOfPanel, _ShowSelectOneOfPanel, !Frame)
-%	handle_selectOneOf(ShowSelectOneOfPanel, !Panel)
-	;
-	Action = selectOneOf(GetFunc, SetFunc, options(GetChoice, ListChoiceItems)),
-	initSelectOneOfPanel(InitSelectOneOfPanel, toString(InterfaceData), GetFunc, SetFunc, GetChoice, !Panel),
-	list.foldl2(buildSelectOneOfPanel(GetFunc), ListChoiceItems, InitSelectOneOfPanel, _ShowSelectOneOfPanel, !Frame)
-%	handle_selectOneOf(ShowSelectOneOfPanel, !Panel)
+	Action = selectOneOf(FuncSelectedChoice, FuncSelectChoice, FuncSetData, ListChoices),
+	initSelectOneOfPanel(InitSelectOneOfPanel, toString(InterfaceData), FuncSelectedChoice, FuncSetData, !Panel),
+	list.foldl2(buildSelectOneOfPanel(Flat, FuncSelectChoice), ListChoices, InitSelectOneOfPanel, _ShowSelectOneOfPanel, !Frame)
 	.
 
 % :- pred handle_panelBegin(string, ddpanel(D), ddpanel(D)).
@@ -699,7 +696,9 @@ buildDialogForm(Flat, di(InterfaceData, Action), !Frame, !Panel) :-
 	handle_editField_panel(Button::in, GetFunc::in, SetFunc::in, NewPanel::ui, PanelDI::di, PanelUO::uo),
 	[will_not_call_mercury, promise_pure],
 	"
+							 System.out.println (""**"" + PanelDI.getClass ().getName ());
 	PanelUO = PanelDI.handle_editField (Button, GetFunc, SetFunc, (ui.swing.UIPanel) NewPanel);
+	System.out.println (""After"");
 	"
 	).
 
@@ -820,99 +819,106 @@ buildDialogForm(Flat, di(InterfaceData, Action), !Frame, !Panel) :-
 %%
 
 
-:- pred buildSelectOneOfPanel(choiceItem(F), soopanel(F), soopanel(F), frame(D), frame(D)).
-:- mode buildSelectOneOfPanel(in, di, uo, di, uo) is det.
+% :- pred buildSelectOneOfPanel(
+% 	bool, func(D1, int) = setResult(selectChoice(D1, F)),
+% 	choiceItem(F),
+% 	int, int,
+% 	soopanel(D1), soopanel(D1),
+% 	frame(D2), frame(D2)).
+% :- mode buildSelectOneOfPanel(in, in, in, in, out, di, uo, di, uo) is det.
 
-buildSelectOneOfPanel(ci(InterfaceData, ListDialogItems), !SOOPanel, !Frame) :-
+% buildSelectOneOfPanel(Flat, FuncSelectChoice, ci(InterfaceData, ListDialogItems), Index, Index + 1, !SOOPanel, !Frame) :-
+% 	ListDialogItems = [],
+% 	handle_choiceItem_onlyValue(createRadioButton(InterfaceData), FuncSelectChoice, Index, !SOOPanel)
+% 	;
+% 	ListDialogItems = [_|_],
+% 	initInlinePanelForChoice(InlinePanel, !SOOPanel),
+% 	list.foldl2(trace_buildDialogForm(Flat), ListDialogItems, !Frame, InlinePanel, ShowPanel),
+% 	handle_choiceItem_withPanel(createRadioButton(InterfaceData), FuncSelectChoice, Index, ShowPanel, !SOOPanel)
+% 	.
+
+% :- pred handle_choiceItem_onlyValue(
+% 	radioButton, func(D, int) = setResult(selectChoice(D, F)), int,
+% 	soopanel(D), soopanel(D)).
+% :- mode handle_choiceItem_onlyValue(in, in, in, di, uo) is det.
+
+% :- pragma foreign_proc(
+% 	"Java",
+% 	handle_choiceItem_onlyValue(
+% 		RadioButton::in, FuncSelectChoice::in, Index::in,
+% 		PanelDI::di, PanelUO::uo),
+% 	[will_not_call_mercury, promise_pure],
+% 	"
+% 	PanelUO = PanelDI.handle_choiceItem (RadioButton, FuncSelectChoice, Index);
+% 	"
+% 	).
+
+% :- pred handle_choiceItem_withPanel(
+% 	radioButton, func(D, int) = setResult(selectChoice(D, F)), int,
+% 	ddpanel(F), soopanel(D), soopanel(D)).
+% :- mode handle_choiceItem_withPanel(in, in, in, in, di, uo) is det.
+
+% :- pragma foreign_proc(
+% 	"Java",
+% 	handle_choiceItem_withPanel(
+% 		RadioButton::in, FuncSelectChoice::in, Index::in,
+% 		FieldPanel::in,
+% 		PanelDI::di, PanelUO::uo),
+% 	[will_not_call_mercury, promise_pure],
+% 	"
+% 	PanelUO = PanelDI.handle_choiceItem (RadioButton, FuncSelectChoice, Index, FieldPanel);
+% 	"
+% 	).
+
+:- pred buildSelectOneOfPanel(
+	bool, func(D1, int) = setResult(selectChoice(D1, F)),
+	choiceItem(F),
+	soopanel(D1), soopanel(D1),
+	frame(D2), frame(D2)).
+:- mode buildSelectOneOfPanel(in, in, in, di, uo, di, uo) is det.
+
+buildSelectOneOfPanel(Flat, FuncSelectChoice, ci(InterfaceData, ListDialogItems), !SOOPanel, !Frame) :-
 	ListDialogItems = [],
-	handle_choiceItem_noValue(createRadioButton(InterfaceData), !SOOPanel)
+	handle_choiceItem_onlyValue(createRadioButton(InterfaceData), FuncSelectChoice, !SOOPanel)
 	;
 	ListDialogItems = [_|_],
 	initInlinePanelForChoice(InlinePanel, !SOOPanel),
-	list.foldl2(trace_buildDialogForm(no), ListDialogItems, !Frame, InlinePanel, ShowPanel),
-	handle_choiceItem_noValue(createRadioButton(InterfaceData), ShowPanel, !SOOPanel)
-	.
-
-buildSelectOneOfPanel(ci(InterfaceData, Value, ListDialogItems), !SOOPanel, !Frame) :-
-	ListDialogItems = [],
-	handle_choiceItem_withValue(createRadioButton(InterfaceData), Value, !SOOPanel)
-	;
-	ListDialogItems = [_|_],
-	initInlinePanelForChoice(InlinePanel, !SOOPanel),
-	list.foldl2(trace_buildDialogForm(no), ListDialogItems, !Frame, InlinePanel, ShowPanel),
-	handle_choiceItem_withValue(createRadioButton(InterfaceData), Value, ShowPanel, !SOOPanel)
-	.
-
-:- pred buildSelectOneOfPanel(get(D1, F), choiceItem(F), soopanel(F), soopanel(F), frame(D2), frame(D2)).
-:- mode buildSelectOneOfPanel(in, in, di, uo, di, uo) is det.
-
-buildSelectOneOfPanel(_GetFunc, ci(InterfaceData, ListDialogItems), !SOOPanel, !Frame) :-
-	ListDialogItems = [],
-	handle_choiceItem_noValue(createRadioButton(InterfaceData), !SOOPanel)
-	;
-	ListDialogItems = [_|_],
-	initInlinePanelForChoice(InlinePanel, !SOOPanel),
-	list.foldl2(trace_buildDialogForm(no), ListDialogItems, !Frame, InlinePanel, ShowPanel),
-	handle_choiceItem_noValue(createRadioButton(InterfaceData), ShowPanel, !SOOPanel)
-	.
-
-buildSelectOneOfPanel(_GetFunc, ci(InterfaceData, Value, ListDialogItems), !SOOPanel, !Frame) :-
-	ListDialogItems = [],
-	handle_choiceItem_withValue(createRadioButton(InterfaceData), Value, !SOOPanel)
-	;
-	ListDialogItems = [_|_],
-	initInlinePanelForChoice(InlinePanel, !SOOPanel),
-	list.foldl2(trace_buildDialogForm(no), ListDialogItems, !Frame, InlinePanel, ShowPanel),
-	handle_choiceItem_withValue(createRadioButton(InterfaceData), Value, ShowPanel, !SOOPanel)
+	list.foldl2(trace_buildDialogForm(Flat), ListDialogItems, !Frame, InlinePanel, ShowPanel),
+	handle_choiceItem_withPanel(createRadioButton(InterfaceData), FuncSelectChoice, ShowPanel, !SOOPanel)
 	.
 
 
 
-:- pred handle_choiceItem_noValue(radioButton, soopanel(D), soopanel(D)).
-:- mode handle_choiceItem_noValue(in, di, uo) is det.
+:- pred handle_choiceItem_onlyValue(
+	radioButton, func(D, int) = setResult(selectChoice(D, F)),
+	soopanel(D), soopanel(D)).
+:- mode handle_choiceItem_onlyValue(in, in, di, uo) is det.
 
 :- pragma foreign_proc(
 	"Java",
-	handle_choiceItem_noValue(RadioButton::in, PanelDI::di, PanelUO::uo),
+	handle_choiceItem_onlyValue(
+		RadioButton::in, FuncSelectChoice::in,
+		PanelDI::di, PanelUO::uo),
 	[will_not_call_mercury, promise_pure],
 	"
-	PanelUO = PanelDI.handle_choiceItem (RadioButton, null, null);
+	PanelUO = PanelDI.handle_choiceItem (RadioButton, FuncSelectChoice);
 	"
 	).
 
-:- pred handle_choiceItem_noValue(radioButton, ddpanel(D), soopanel(D), soopanel(D)).
-:- mode handle_choiceItem_noValue(in, in, di, uo) is det.
+:- pred handle_choiceItem_withPanel(
+	radioButton, func(D, int) = setResult(selectChoice(D, F)),
+	ddpanel(F), soopanel(D), soopanel(D)).
+:- mode handle_choiceItem_withPanel(in, in, in, di, uo) is det.
 
 :- pragma foreign_proc(
 	"Java",
-	handle_choiceItem_noValue(RadioButton::in, ValuePanel::in, PanelDI::di, PanelUO::uo),
+	handle_choiceItem_withPanel(
+		RadioButton::in, FuncSelectChoice::in,
+		FieldPanel::in,
+		PanelDI::di, PanelUO::uo),
 	[will_not_call_mercury, promise_pure],
 	"
-	PanelUO = PanelDI.handle_choiceItem (RadioButton, null, (ui.swing.InlinePanelField) ValuePanel);
-	"
-	).
-
-:- pred handle_choiceItem_withValue(radioButton, D, soopanel(D), soopanel(D)).
-:- mode handle_choiceItem_withValue(in, in, di, uo) is det.
-
-:- pragma foreign_proc(
-	"Java",
-	handle_choiceItem_withValue(RadioButton::in, Value::in, PanelDI::di, PanelUO::uo),
-	[will_not_call_mercury, promise_pure],
-	"
-	PanelUO = PanelDI.handle_choiceItem (RadioButton, Value, null);
-	"
-	).
-
-:- pred handle_choiceItem_withValue(radioButton, D, ddpanel(D), soopanel(D), soopanel(D)).
-:- mode handle_choiceItem_withValue(in, in, in, di, uo) is det.
-
-:- pragma foreign_proc(
-	"Java",
-	handle_choiceItem_withValue(RadioButton::in, AValue::in, ValuePanel::in, PanelDI::di, PanelUO::uo),
-	[will_not_call_mercury, promise_pure],
-	"
-	PanelUO = PanelDI.handle_choiceItem (RadioButton, AValue, (ui.swing.InlinePanelField) ValuePanel);
+	PanelUO = PanelDI.handle_choiceItem (RadioButton, FuncSelectChoice, (ui.swing.InlinePanelField) FieldPanel);
 	"
 	).
 
@@ -939,7 +945,7 @@ buildSelectOneOfPanel(_GetFunc, ci(InterfaceData, Value, ListDialogItems), !SOOP
 %%
 %%
 
-:- func setFieldListElement(get(D, list(F)), set(D, list(F)), D, F, int) = maybe_error(D).
+:- func setFieldListElement(get(D, list(F)), set(D, list(F)), D, F, int) = setResult(D).
 
 setFieldListElement(Get, Set, Data, Element, Index) = Result :-
 	Get(Data) = PrevList,
@@ -949,11 +955,11 @@ setFieldListElement(Get, Set, Data, Element, Index) = Result :-
 	(
 		io.print("Replacing ", !IO),
 		io.print(Index, !IO),
-		io.print("th element of ", !IO),
+		io.print("th element of\n", !IO),
 		io.print(NextList, !IO),
-		io.print(" with ", !IO),
+		io.print("\n with \n", !IO),
 		io.print(Element, !IO),
-		io.print(" and result is ", !IO),
+		io.print("\n and result is\n", !IO),
 		io.print(Result, !IO),
 		io.nl(!IO)
 	).
