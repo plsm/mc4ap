@@ -78,7 +78,12 @@ final class PrimitiveTypeFieldListEditorPanel<D, F>
 			}
 		}
 	}
-	
+	@Override
+	public boolean commitValue ()
+	{
+		return true;
+	}
+
 	private class FieldList_ListModel
 		//extends javax.swing.AbstractListModel
 		extends javax.swing.DefaultListModel
