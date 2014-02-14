@@ -52,18 +52,12 @@ final public class UIFrame<D>
 	public UIFrame (String title, D data)
 	{
 		super (new DataReference (null, data));
+		this.data.frame = this;
 		this.title = title;
 		this.frame = this;
-		initComponents ();
 		this.navigateActions = new LinkedList<NavigateAction> ();
 		this.close = new Semaphore (0);
-		this.buttonsPanel.setVisible (false);
-	}
-	/**
-	 * Show this frame and return the data after the frame has been closed.
-	 */
-	public Object showFrame ()
-	{
+		
 		try {
 			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
 				if ("Nimbus".equals(info.getName ())) {
@@ -74,6 +68,14 @@ final public class UIFrame<D>
 		} catch (Exception e) {
 			
 		}
+		initComponents ();
+		this.buttonsPanel.setVisible (false);
+	}
+	/**
+	 * Show this frame and return the data after the frame has been closed.
+	 */
+	public Object showFrame ()
+	{
 		// add the exit button
 		this.toolBar.addSeparator ();
 		JButton exitButton = new JButton (new javax.swing.AbstractAction ("Exit") {
@@ -261,8 +263,7 @@ final public class UIFrame<D>
 						@Override
 						public boolean perform ()
 						{
-							UIFrame.this.data.setValue (panel.data.getValue ());
-							return true;
+							return UIFrame.this.data.setValue (panel.data.getValue ());
 						}
 					};
 					UIFrame.this.showPanel (panel.key, action);
