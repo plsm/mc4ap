@@ -50,7 +50,11 @@ final public class SelectOneOfPanel<D, F>
 	 */
 	final private SetFieldFunc<D, F> setFieldFunc;
 	
-	transient private final String panelName;
+	transient final private String panelName;
+	/**
+	 * The panel that has been selected after pressing a radio button.
+	 */
+	private InlinePanelField<D, F> selectedInlinePanel;
 	/**
 	 * A vector with radio buttons and the panels that they display.
 	 */
@@ -78,6 +82,7 @@ final public class SelectOneOfPanel<D, F>
 		this.setFieldFunc = new SetFieldFunc<> (funcSetData);
 		initComponents ();
 		this.buttonPanelInfo = new Vector<> (10, 10);
+		this.selectedInlinePanel = null;
 		
 	}
 	/**
@@ -145,6 +150,7 @@ final public class SelectOneOfPanel<D, F>
 			public void actionPerformed (ActionEvent e) {
 				CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
 				cl.show (SelectOneOfPanel.this.dialogsPanel, EMPTY);
+				SelectOneOfPanel.this.selectedInlinePanel = null;
 				SetResult_1<SelectChoice_2<D, F> > object = scf.apply (SelectOneOfPanel.this.data.getValue (), index);
 				if (object instanceof SetResult_1.Ok_1) {
 					SetResult_1.Ok_1<SelectChoice_2<D, F> > ok = (SetResult_1.Ok_1<SelectChoice_2<D, F> >) object;
@@ -177,11 +183,13 @@ final public class SelectOneOfPanel<D, F>
 					cl.show (SelectOneOfPanel.this.dialogsPanel, key);
 					panel.setData (ok.F1.field);
 					SelectOneOfPanel.this.data.setValue (ok.F1.data);
+					SelectOneOfPanel.this.selectedInlinePanel = panel;
 				}
 				else if (object instanceof SetResult_1.Error_1) {
 					SelectOneOfPanel.this.buttonGroup.clearSelection ();
 					CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
 					cl.show (SelectOneOfPanel.this.dialogsPanel, EMPTY);
+					SelectOneOfPanel.this.selectedInlinePanel = null;
 				}
 			}
 		});
@@ -275,27 +283,25 @@ final public class SelectOneOfPanel<D, F>
 			if (bpi.panel != null) {
 				bpi.panel.setData (yes.F1.F2);
 				cl.show (this.dialogsPanel, bpi.key);
+				this.selectedInlinePanel = bpi.panel;
 			}
 			else {
 				cl.show (this.dialogsPanel, EMPTY);
+				this.selectedInlinePanel = null;
 			}
 		}
 		else {
 			this.buttonGroup.clearSelection ();
 			CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
 			cl.show (SelectOneOfPanel.this.dialogsPanel, EMPTY);
+				this.selectedInlinePanel = null;
 		}
 	}
 
 	@Override
 	public boolean commitValue ()
 	{
-		for (ButtonPanelInfo bpi : this.buttonPanelInfo) {
-			if (!bpi.panel.commitValue ()) {
-				return false;
-			}
-		}
-		return true;
+		return this.selectedInlinePanel.commitValue ();
 	}
 
 	
