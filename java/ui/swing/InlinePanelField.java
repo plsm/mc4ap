@@ -28,7 +28,7 @@ final public class InlinePanelField<D1, D2>
 	{
 		super (data, frame);
 		this.uipanel = parentPanel;
-		setBorder(javax.swing.BorderFactory.createTitledBorder (panelName));
+		setBorder (javax.swing.BorderFactory.createTitledBorder (panelName));
 //		this.initComponents ();
 	}
 
@@ -76,14 +76,18 @@ final public class InlinePanelField<D1, D2>
 		this.addDynamicComponent (button);
 		ActionListener action;
 		action = new ActionListener () {
+			@Override
 			public void actionPerformed (ActionEvent evt)
 			{
 				childPanel.setData (InlinePanelField.this.data.getValue ());
 				NavigateAction action = new NavigateAction (InlinePanelField.this.getUIPanel ().key)
 				{
+					@Override
 					public boolean perform ()
 					{
-						return InlinePanelField.this.setData (childPanel.data.getValue ());
+						return
+							childPanel.commitValue ()
+							&& InlinePanelField.this.setData (childPanel.data.getValue ());
 					}
 				};
 				InlinePanelField.this.frame.showPanel (childPanel.key, action);
@@ -105,18 +109,14 @@ final public class InlinePanelField<D1, D2>
 			@Override
 			public void actionPerformed (java.awt.event.ActionEvent evt)
 			{
-//				childPanel.setData (applyGetFunc (getFunc));
 				childPanel.setData (InlinePanelField.this.data.applyGetFieldFunc (getFieldFunc));
 				NavigateAction action = new NavigateAction (InlinePanelField.this.getUIPanel ().key) {
 					@Override
 					public boolean perform ()
 					{
-//						boolean ok = applySetFunc (setFunc, childPanel.data.getValue ());
-						boolean ok = InlinePanelField.this.data.applySetFieldFunc (setFieldFunc, childPanel.data.getValue ());
-//						if (ok) {
-//							InlinePanelField.this.setData (InlinePanelField.this.data.getValue ());
-//						}
-						return ok;
+						return
+							childPanel.commitValue ()
+							&& InlinePanelField.this.data.applySetFieldFunc (setFieldFunc, childPanel.data.getValue ());
 					}
 				};
 				InlinePanelField.this.frame.showPanel (childPanel.key, action);
@@ -124,18 +124,12 @@ final public class InlinePanelField<D1, D2>
 		};
 		button.addActionListener (action);
 		return this;
-//		throw new IllegalStateException ("InlinePanelField does not have buttons that open other panels");
 	}
 
 	@Override
 	UIPanel getUIPanel ()
 	{
-//		if (this.uipanel == null) {
-//			throw new IllegalStateException ("Never reached");
-//		}
-//		else {
-			return this.uipanel;
-//		}
+		return this.uipanel;
 	}
 	/*
 	 *     System.out.print ("Changed from " + this.getPreferredSize ());
