@@ -1,1 +1,4 @@
 Makefile
+mercury/Mercury
+mercury/*.err
+mercury/*.mh
