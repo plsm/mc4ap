@@ -239,7 +239,9 @@ public class FieldListCellEditorPanel<D, F>
 					@Override
 					public boolean perform ()
 					{
-						return FieldListCellEditorPanel.this.setData (childPanel.data.getValue ());
+						return
+							childPanel.commitValue ()
+							&& FieldListCellEditorPanel.this.setData (childPanel.data.getValue ());
 					}
 				};
 				FieldListCellEditorPanel.this.frame.showPanel (childPanel.key, action);
@@ -267,9 +269,11 @@ public class FieldListCellEditorPanel<D, F>
 					@Override
 					public boolean perform ()
 					{
+						if (!childPanel.commitValue ()) {
+							return false;
+						}
 						SetResult_1<F> result = setFieldFunc.apply (FieldListCellEditorPanel.this.data.getValue (), childPanel.data.getValue ());
-						boolean ok = FieldListCellEditorPanel.this.data.handle_setResult (result);
-						return ok;
+						return FieldListCellEditorPanel.this.data.handle_setResult (result);
 					}
 				};
 				FieldListCellEditorPanel.this.frame.showPanel (childPanel.key, action);
