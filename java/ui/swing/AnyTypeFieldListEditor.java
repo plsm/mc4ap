@@ -8,6 +8,7 @@ package ui.swing;
 import java.awt.Dimension;
 import data.AbstractMercuryReference;
 import data.MercuryReference;
+import javax.swing.table.TableCellEditor;
 
 /**
  * This component allows the user to edit a field list of generic type.
@@ -21,11 +22,14 @@ final class AnyTypeFieldListEditor<D, F>
 	/**
 	 * Field name.  This is used to initalise the panel border.
 	 */
-	private final String fieldName;
+	final transient private String fieldName;
 	/**
 	 * Default value used when adding a new element to the list.
 	 */
-	private final F defaultValue;
+	final private F defaultValue;
+	/**
+	 * Table model used by {@code JTable} component.
+	 */
 	final private FieldList_TableModel fieldList_tableModel;
 
 	/**
@@ -59,7 +63,7 @@ final class AnyTypeFieldListEditor<D, F>
 	}
 
 	@Override
-	public void valueChanged (MercuryReference data)
+	public void valueChanged (MercuryReference<D> dummy)
 	{
 		this.fieldList_tableModel.fireTableDataChanged ();
 	}
@@ -67,6 +71,10 @@ final class AnyTypeFieldListEditor<D, F>
 	@Override
 	public boolean commitValue ()
 	{
+		TableCellEditor tce = this.fieldList_table.getCellEditor ();
+		if (tce != null) {
+			return tce.stopCellEditing ();
+		}
 		return true;
 	}
 	
@@ -82,11 +90,11 @@ final class AnyTypeFieldListEditor<D, F>
 			jmercury.list.List_1.F_cons_2<F> cons = (jmercury.list.List_1.F_cons_2) previousList;
 			index--;
 			if (insert == null) {
-				insert = new jmercury.list.List_1.F_cons_2<F> (cons.F1, null);
+				insert = new jmercury.list.List_1.F_cons_2<> (cons.F1, null);
 				newList = insert;
 			}
 			else {
-				newInsert = new jmercury.list.List_1.F_cons_2<F> (cons.F1, null);
+				newInsert = new jmercury.list.List_1.F_cons_2<> (cons.F1, null);
 				insert.F2 = newInsert;
 				insert = newInsert;
 			}
@@ -228,7 +236,7 @@ final class AnyTypeFieldListEditor<D, F>
 
    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
 		jmercury.list.List_1<F> previousList = this.data.getValue ();
-		jmercury.list.List_1<F> nextList = new jmercury.list.List_1.F_cons_2<F> (this.defaultValue, previousList);
+		jmercury.list.List_1<F> nextList = new jmercury.list.List_1.F_cons_2<> (this.defaultValue, previousList);
 		this.data.setValue (nextList);
 		this.fieldList_tableModel.fireTableDataChanged ();
 //		System.out.println ("AnyTypeFieldListEditor.addButtonActionPerformed/1");//DEBUG
@@ -242,7 +250,7 @@ final class AnyTypeFieldListEditor<D, F>
 		if (index != -1) {
 			F o = this.applyListElementFunc (index);
 			jmercury.list.List_1<F> previousList = this.data.getValue ();
-			jmercury.list.List_1<F> nextList = new jmercury.list.List_1.F_cons_2<F> (o, previousList);
+			jmercury.list.List_1<F> nextList = new jmercury.list.List_1.F_cons_2<> (o, previousList);
 			this.data.setValue (nextList);
 			this.fieldList_tableModel.fireTableDataChanged ();
 		}
