@@ -263,7 +263,9 @@ final public class UIFrame<D>
 						@Override
 						public boolean perform ()
 						{
-							return UIFrame.this.data.setValue (panel.data.getValue ());
+							return
+								panel.commitValue ()
+								&& UIFrame.this.data.setValue (panel.data.getValue ());
 						}
 					};
 					UIFrame.this.showPanel (panel.key, action);
@@ -293,7 +295,9 @@ final public class UIFrame<D>
 						@Override
 						public boolean perform ()
 						{
-							return UIFrame.this.data.applySetFieldFunc (setFieldFunc, panel.data.getValue ());
+							return
+								panel.commitValue ()
+								&& UIFrame.this.data.applySetFieldFunc (setFieldFunc, panel.data.getValue ());
 						}
 					};
 					UIFrame.this.showPanel (panel.key, action);
