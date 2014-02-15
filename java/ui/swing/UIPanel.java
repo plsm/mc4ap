@@ -64,7 +64,9 @@ public class UIPanel<D>
 					@Override
 					public boolean perform ()
 					{
-						return UIPanel.this.setData (childPanel.data.getValue ());
+						return
+							childPanel.commitValue ()
+							&& UIPanel.this.setData (childPanel.data.getValue ());
 					}
 				};
 				UIPanel.this.frame.showPanel (childPanel.key, action);
@@ -94,8 +96,9 @@ public class UIPanel<D>
 					@Override
 					public boolean perform ()
 					{
-						boolean ok = UIPanel.this.data.applySetFieldFunc (setFieldFunc, childPanel.data.getValue ());
-						return ok;
+						return
+							childPanel.commitValue ()
+							&& UIPanel.this.data.applySetFieldFunc (setFieldFunc, childPanel.data.getValue ());
 					}
 				};
 				UIPanel.this.frame.showPanel (childPanel.key, action);
@@ -103,6 +106,16 @@ public class UIPanel<D>
 		};
 		button.addActionListener (action);
 		return this;
+	}
+	
+	boolean commitValue ()
+	{
+		for (ComponentPopulate cp : this.componentsPopulate) {
+			if (!cp.commitValue ()) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	/** This method is called from within the constructor to
