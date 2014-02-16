@@ -247,7 +247,6 @@ handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO
 handleDialogAction(_Navigation, di(_DialogInterfaceData, DialogAction), !Data, !IO) :-
 	DialogAction = updateData(Set),
 	Set(!.Data) = !:Data.
-%	handleResult(Set(!.Data), !Data, !IO).
 
 handleDialogAction(_Navigation, di(_DialogInterfaceData, DialogAction), _, Data, !IO) :-
 	DialogAction = newValue(Data).
@@ -287,8 +286,54 @@ handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO
 			!:Data = NextData
 			;
 			Dialog = [_|_],
-			showDialog(Dialog, nextNavigation(Navigation, ValueInterfaceData), Field, NextField, !IO),
+			showDialog(Dialog, nextNavigation(nextNavigation(Navigation, DialogInterfaceData), ValueInterfaceData), Field, NextField, !IO),
 			handleResult(FuncSetData(NextData, NextField), NextData, !:Data, !IO)
+		)
+	else
+		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)
+	)
+	.
+
+handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO) :-
+	DialogAction = selectOneOf(FuncSelectedChoice, FuncSelectChoice, ListChoices),
+	FuncSelectedChoice(!.Data) = MCurrentChoice,
+	MapToString =
+	(pred(CI::in, S::out, Idx::in, NextIdx::out) is det :-
+		NextIdx = Idx + 1,
+		CI = ci(ChoiceItemInterfaceData, _),
+		S1 = (if MCurrentChoice = yes(Idx) then "(*)" else "( )"),
+		(
+			ChoiceItemInterfaceData = label(Option),
+			S2 = Option
+		),
+		S = S1 ++ " " ++ S2
+	),
+	list.map_foldl(MapToString, ListChoices, ListStrings, 0, _),
+	printList(nothing, ListStrings, nextNavigation(Navigation, DialogInterfaceData), !IO),
+	askActionUser(list.length(ListStrings), SelectedAction, !IO),
+	(if
+		SelectedAction = 0
+	then
+		true
+	else if
+		SelectedAction > 0,
+		FuncSelectChoice(!.Data, SelectedAction - 1) = SelectChoice
+	then
+		SelectChoice = error(Msg),
+		io.print(Msg, !IO),
+		io.nl(!IO),
+		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)
+		;
+		SelectChoice = ok(NextData),
+		list.det_split_list(SelectedAction - 1, ListChoices, _Start, End),
+		ChoiceItem = list.det_head(End),
+		ChoiceItem = ci(ValueInterfaceData, Dialog),
+		(
+			Dialog = [],
+			!:Data = NextData
+			;
+			Dialog = [_|_],
+			showDialog(Dialog, nextNavigation(nextNavigation(Navigation, DialogInterfaceData), ValueInterfaceData), NextData, !:Data, !IO)
 		)
 	else
 		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)

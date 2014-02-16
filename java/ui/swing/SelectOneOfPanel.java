@@ -7,8 +7,8 @@ package ui.swing;
 
 import data.AbstractMercuryReference;
 import data.MercuryReference;
-import data.closure.SelectChoiceFunc;
-import data.closure.SelectedChoiceFunc;
+import data.closure.SelectFieldChoiceFunc;
+import data.closure.SelectedFieldChoiceFunc;
 import data.closure.SetFieldFunc;
 
 import ui.KeyGenerator;
@@ -31,64 +31,39 @@ import jmercury.userInterface.CurrentChoice_1;
  * @author pedro
  */
 final public class SelectOneOfPanel<D, F>
-	extends AbstractDataPanel<D, AbstractMercuryReference<D> >
-	implements ComponentPopulate<D>
+	extends AbstractSelectOneOfPanel<D, F>
+//	extends AbstractDataPanel<D, AbstractMercuryReference<D> >
+//	implements ComponentPopulate<D>
 {
-
-	/**
-	 * Empty panel key.  Some radio buttons do not have any panel associated.  When the user presses them or when the field corresponds to such radio button, an empty label is displayed.
-	 */
-	static private String EMPTY = "empty";
-	
 	/**
 	 * Function used to select the correct radio button.
 	 */
-	final private SelectedChoiceFunc<D, F> selectedChoiceFunc;
+	final private SelectedFieldChoiceFunc<D, F> selectedChoiceFunc;
 	
 	/**
 	 * Function used to select the correct radio button.
 	 */
 	final private SetFieldFunc<D, F> setFieldFunc;
-	
-	transient final private String panelName;
 	/**
-	 * The panel that has been selected after pressing a radio button.
+	 * 
+	 * @param data
+	 * @param frame
+	 * @param parentPanel
+	 * @param panelName
+	 * @param funcSelectedChoice
+	 * @param funcSetData 
 	 */
-	private InlinePanelField<D, F> selectedInlinePanel;
-	/**
-	 * A vector with radio buttons and the panels that they display.
-	 */
-	final private Vector<ButtonPanelInfo> buttonPanelInfo;
-	private final UIPanel<D> parentPanel;
-	transient private int numberRadioButtons = 0;
-	static private KeyGenerator keyGenerator = new KeyGenerator ();
-		/** Creates new form SelectOneOfPanel */
-//	SelectOneOfPanel (MercuryReference<D> data, UIFrame frame, UIPanel<D> parentPanel, String panelName, Object[] selectedItemFunc)
-//	{
-//		super (data, frame);
-//		this.panelName = panelName;
-//		this.parentPanel = parentPanel;
-//		initComponents ();
-//		this.selectedItemFunc = selectedItemFunc;
-//		this.buttonPanels = new HashMap<JRadioButton, ButtonInfo> ();
-//	}
-
 	SelectOneOfPanel (AbstractMercuryReference<D> data, UIFrame frame, UIPanel<D> parentPanel, String panelName, Object[] funcSelectedChoice, Object[] funcSetData)
 	{
-		super (data, frame);
-		this.panelName = panelName;
-		this.parentPanel = parentPanel;
-		this.selectedChoiceFunc = new SelectedChoiceFunc<> (funcSelectedChoice);
+		super (data, frame, parentPanel, panelName);
+		this.selectedChoiceFunc = new SelectedFieldChoiceFunc<> (funcSelectedChoice);
 		this.setFieldFunc = new SetFieldFunc<> (funcSetData);
-		initComponents ();
-		this.buttonPanelInfo = new Vector<> (10, 10);
-		this.selectedInlinePanel = null;
-		
 	}
 	/**
 	 * Construct an inline panel where swing components to edit this {@code UIPanel} Mercury data can be placed.  Inline panels are bordered panels that visually group swing components.
 	 * @return 
 	 */
+	@Override
 	public InlinePanelField<D, F> newInlinePanelForChoice ()
 	{
 		AbstractMercuryReference<F> amr = new AbstractMercuryReference<F> () {
@@ -137,6 +112,7 @@ final public class SelectOneOfPanel<D, F>
 		InlinePanelField<D, F> result = new InlinePanelField<> (amr, this.frame, this.parentPanel);
 		return result;
 	}
+	@Override
 	public SelectOneOfPanel<D, F> handle_choiceItem (JRadioButton button, final Object[] selectChoiceFunc)
 	{
 		ButtonPanelInfo bpi = new ButtonPanelInfo (button);
@@ -145,7 +121,7 @@ final public class SelectOneOfPanel<D, F>
 		this.buttonGroup.add (button);
 		button.addActionListener (new ActionListener () {
 			int index = SelectOneOfPanel.this.numberRadioButtons++;
-			SelectChoiceFunc<D,F> scf = new SelectChoiceFunc<> (selectChoiceFunc);
+			SelectFieldChoiceFunc<D,F> scf = new SelectFieldChoiceFunc<> (selectChoiceFunc);
 			@Override
 			public void actionPerformed (ActionEvent e) {
 				CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
@@ -163,6 +139,7 @@ final public class SelectOneOfPanel<D, F>
 		});
 		return this;
 	}
+	@Override
 	public SelectOneOfPanel<D, F> handle_choiceItem (JRadioButton button, final Object[] selectChoiceFunc, final InlinePanelField<D, F> panel)
 	{
 		this.radioButtonsPanel.add (button);
@@ -173,7 +150,7 @@ final public class SelectOneOfPanel<D, F>
 		this.dialogsPanel.add (panel, key);
 		button.addActionListener (new ActionListener () {
 			int index = SelectOneOfPanel.this.numberRadioButtons++;
-			SelectChoiceFunc<D,F> scf = new SelectChoiceFunc<> (selectChoiceFunc);
+			SelectFieldChoiceFunc<D,F> scf = new SelectFieldChoiceFunc<> (selectChoiceFunc);
 			@Override
 			public void actionPerformed (ActionEvent e) {
 				SetResult_1<SelectChoice_2<D, F> > object = scf.apply (SelectOneOfPanel.this.data.getValue (), index);
@@ -195,43 +172,6 @@ final public class SelectOneOfPanel<D, F>
 		});
 		return this;
 	}
-	
-//	public SelectOneOfPanel handle_choiceItem (JRadioButton button, final Object value, final InlinePanelField panel)
-//	{
-//		this.radioButtonsPanel.add (button);
-//		this.buttonGroup.add (button);
-//		if (panel == null) {
-//			button.addActionListener (new ActionListener () {
-//				@Override
-//				public void actionPerformed (ActionEvent e) {
-//					CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
-//					cl.show (SelectOneOfPanel.this.dialogsPanel, EMPTY);
-//					if (value != null) {
-//						SelectOneOfPanel.this.data.setValue (value);
-//					}
-//				}
-//			});
-//		}
-//		else {
-//			final ButtonInfo buttonInfo = new ButtonInfo (panel);
-//			this.dialogsPanel.add (panel, buttonInfo.key);
-////			if (value != null) {
-////				panel.setData (value);
-////			}
-//			this.buttonPanels.put (button, buttonInfo);
-//			button.addActionListener (new ActionListener () {
-//				@Override
-//				public void actionPerformed (ActionEvent e) {
-//					CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
-//					cl.show (SelectOneOfPanel.this.dialogsPanel, buttonInfo.key);
-//					panel.setData (SelectOneOfPanel.this.data.getValue ());
-////					SelectOneOfPanel.this.data.setValue (panel.data.getValue ());
-//					panel.fireValueChanged ();
-//				}
-//			});
-//		}
-//		return this;
-//	}
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -240,31 +180,12 @@ final public class SelectOneOfPanel<D, F>
      */
     @SuppressWarnings("unchecked")
    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-   private void initComponents() {
-
-      buttonGroup = new javax.swing.ButtonGroup();
-      radioButtonsPanel = new javax.swing.JPanel();
-      dialogsPanel = new javax.swing.JPanel();
-      emptyLabel = new javax.swing.JLabel();
-
-      setBorder(javax.swing.BorderFactory.createTitledBorder(this.panelName));
-      setLayout(new java.awt.BorderLayout());
-
-      radioButtonsPanel.setLayout(new javax.swing.BoxLayout(radioButtonsPanel, javax.swing.BoxLayout.Y_AXIS));
-      add(radioButtonsPanel, java.awt.BorderLayout.WEST);
-
-      dialogsPanel.setLayout(new java.awt.CardLayout());
-      dialogsPanel.add(emptyLabel, "empty");
-
-      add(dialogsPanel, java.awt.BorderLayout.CENTER);
+   private void initComponents()
+   {
    }// </editor-fold>//GEN-END:initComponents
 
 
    // Variables declaration - do not modify//GEN-BEGIN:variables
-   private javax.swing.ButtonGroup buttonGroup;
-   private javax.swing.JPanel dialogsPanel;
-   private javax.swing.JLabel emptyLabel;
-   private javax.swing.JPanel radioButtonsPanel;
    // End of variables declaration//GEN-END:variables
 
 	/**
@@ -302,23 +223,5 @@ final public class SelectOneOfPanel<D, F>
 	public boolean commitValue ()
 	{
 		return this.selectedInlinePanel.commitValue ();
-	}
-
-	
-	private class ButtonPanelInfo
-	{
-		final JRadioButton button;
-		final InlinePanelField<D, F> panel;
-		final String key;
-		ButtonPanelInfo (JRadioButton button)
-		{
-			this (button, null, null);
-		}
-		ButtonPanelInfo (JRadioButton button, InlinePanelField<D, F> panel, String key)
-		{
-			this.panel = panel;
-			this.button = button;
-			this.key = key;
-		}
 	}
 }

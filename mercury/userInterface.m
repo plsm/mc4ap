@@ -24,6 +24,16 @@
 /**
  * An user interface can consist of a menu with options that trigger
  * actions or a dialog where the user can edit some data.
+
+ * <p> Menus should be used to do some actions with or without the top
+ * data.  These actions can also change the top data state.  Interactive
+ * actions may depend on the medium used to show the user interface.
+
+ * <p> Dialogues should be used to edit data fields independently of the
+ * medium used to show the user interface.
+
+ * <p> This is the main type of this module as modules {@code ui_xxx}
+ * public methods expect a value of this type.
   
  */
 :- type userInterface(D) --->
@@ -34,13 +44,6 @@
 	m(menu) ;
 	d(ground)
 	).
-
-/*
-:- inst userInterface(D) == bound(
-	m(menu(D)) ;
-	d(dialog(D))
-	).
-*/
 
 /**
  * Represents a menu with options that trigger actions on some data.  The
@@ -133,6 +136,11 @@
 	updateListFieldString( get(D, list(string)), set(D, list(string))           ) ;
 	updateListFieldFloat(  get(D, list(float)),  set(D, list(float))            ) ;
 
+	selectOneOf(
+		func(D) = maybe(int),
+		func(D, int) = setResult(D),
+		list(choiceItem(D))
+	) ;
 	some [F]
 	selectOneOf(
 		func(D) = maybe(currentChoice(F)),
@@ -143,7 +151,7 @@
 	.
 
 /**
- * Represents the current choice of a mutually exclusive options.  When the
+ * Represents the current choice of mutually exclusive options.  When the
  * user interface is displayed we must known which is the current choice to
  * tell the user and to fill any user interface components associated with
  * that choice.

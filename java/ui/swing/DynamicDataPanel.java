@@ -131,9 +131,17 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		//System.out.println ("newInlinePanelForFieldData (" + panelName + ", ...)");
 		return result;
 	}
-	public SelectOneOfPanel newSelectOneOfPanel (String panelName, Object[] funcSelectedChoice, Object[] funcSetData)
+	public <F> SelectOneOfPanel<D, F> newSelectOneOfFieldPanel (String panelName, Object[] funcSelectedChoice, Object[] funcSetData)
 	{
-		SelectOneOfPanel result = new SelectOneOfPanel (this.data, this.frame, this.getUIPanel (), panelName, funcSelectedChoice, funcSetData);
+		SelectOneOfPanel<D, F> result = new SelectOneOfPanel<> (this.data, this.frame, this.getUIPanel (), panelName, funcSelectedChoice, funcSetData);
+		this.componentsPopulate.add (result);
+		//this.addComponent (result, true, true, true);
+		this.addDynamicComponent (result);
+		return result;
+	}
+	public SelectOneOfDataPanel<D> newSelectOneOfDataPanel (String panelName, Object[] funcSelectedChoice)
+	{
+		SelectOneOfDataPanel<D> result = new SelectOneOfDataPanel<> (this.data, this.frame, this.getUIPanel (), panelName, funcSelectedChoice);
 		this.componentsPopulate.add (result);
 		//this.addComponent (result, true, true, true);
 		this.addDynamicComponent (result);
