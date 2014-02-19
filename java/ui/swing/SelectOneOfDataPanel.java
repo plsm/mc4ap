@@ -22,7 +22,7 @@ import javax.swing.JRadioButton;
  * A panel that presents a set of radio buttons.
  * @author pedro
  */
-final public class SelectOneOfDataPanel<D>
+final class SelectOneOfDataPanel<D>
 	extends AbstractSelectOneOfPanel<D, D>
 {
 	final private SelectedDataChoiceFunc<D> selectedChoiceFunc;
@@ -163,7 +163,12 @@ final public class SelectOneOfDataPanel<D>
 	@Override
 	public boolean commitValue ()
 	{
-		return this.selectedInlinePanel.commitValue ();
+		if (this.selectedInlinePanel != null) {
+			return this.selectedInlinePanel.commitValue ();
+		}
+		else {
+			return true;
+		}
 	}
 
 	@Override

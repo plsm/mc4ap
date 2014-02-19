@@ -30,7 +30,7 @@ import jmercury.userInterface.CurrentChoice_1;
  * A panel that presents a set of radio buttons.
  * @author pedro
  */
-final public class SelectOneOfPanel<D, F>
+final class SelectOneOfPanel<D, F>
 	extends AbstractSelectOneOfPanel<D, F>
 //	extends AbstractDataPanel<D, AbstractMercuryReference<D> >
 //	implements ComponentPopulate<D>
@@ -222,6 +222,11 @@ final public class SelectOneOfPanel<D, F>
 	@Override
 	public boolean commitValue ()
 	{
-		return this.selectedInlinePanel.commitValue ();
+		if (this.selectedInlinePanel != null) {
+			return this.selectedInlinePanel.commitValue ();
+		}
+		else {
+			return true;
+		}
 	}
 }
