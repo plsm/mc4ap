@@ -17,6 +17,8 @@ import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JRadioButton;
+import ui.Key;
+import ui.KeyGenerator;
 
 /**
  * A panel that presents a set of radio buttons.
@@ -92,7 +94,7 @@ final class SelectOneOfDataPanel<D>
 			@Override
 			public void actionPerformed (ActionEvent e) {
 				CardLayout cl = (CardLayout) (SelectOneOfDataPanel.this.dialogsPanel.getLayout ());
-				cl.show (SelectOneOfDataPanel.this.dialogsPanel, EMPTY);
+				cl.show (SelectOneOfDataPanel.this.dialogsPanel, KeyGenerator.EMPTY.toString ());
 				SelectOneOfDataPanel.this.selectedInlinePanel = null;
 				SetResult_1<D> object = scf.apply (SelectOneOfDataPanel.this.data.getValue (), index);
 				if (SelectOneOfDataPanel.this.data.handle_setResult (object)) {
@@ -111,10 +113,10 @@ final class SelectOneOfDataPanel<D>
 	{
 		this.radioButtonsPanel.add (button);
 		this.buttonGroup.add (button);
-		final String key = AbstractSelectOneOfPanel.keyGenerator.nextKey ();
+		final Key key = AbstractSelectOneOfPanel.keyGenerator.nextKey ();
 		ButtonPanelInfo bpi = new ButtonPanelInfo (button, panel, key);
 		this.buttonPanelInfo.insertElementAt (bpi, this.numberRadioButtons);
-		this.dialogsPanel.add (panel, key);
+		this.dialogsPanel.add (panel, key.toString ());
 		button.addActionListener (new ActionListener () {
 			int index = SelectOneOfDataPanel.this.numberRadioButtons++;
 			SelectDataChoiceFunc<D> scf = new SelectDataChoiceFunc<> (selectChoiceFunc);
@@ -125,11 +127,11 @@ final class SelectOneOfDataPanel<D>
 				if (SelectOneOfDataPanel.this.data.handle_setResult (object)) {
 					SetResult_1.Ok_1<D> ok = (SetResult_1.Ok_1<D>) object;
 					panel.setData (ok.F1);
-					cl.show (SelectOneOfDataPanel.this.dialogsPanel, key);
+					cl.show (SelectOneOfDataPanel.this.dialogsPanel, key.toString ());
 					SelectOneOfDataPanel.this.selectedInlinePanel = panel;
 				}
 				else {
-					cl.show (SelectOneOfDataPanel.this.dialogsPanel, AbstractSelectOneOfPanel.EMPTY);
+					cl.show (SelectOneOfDataPanel.this.dialogsPanel, KeyGenerator.EMPTY.toString ());
 					SelectOneOfDataPanel.this.selectedInlinePanel = null;
 				}
 			}
@@ -182,18 +184,18 @@ final class SelectOneOfDataPanel<D>
 			CardLayout cl = (CardLayout) (this.dialogsPanel.getLayout ());
 			if (bpi.panel != null) {
 				bpi.panel.setData (this.data.getValue ());
-				cl.show (this.dialogsPanel, bpi.key);
+				cl.show (this.dialogsPanel, bpi.key.toString ());
 				this.selectedInlinePanel = bpi.panel;
 			}
 			else {
-				cl.show (this.dialogsPanel, EMPTY);
+				cl.show (this.dialogsPanel, KeyGenerator.EMPTY.toString ());
 				this.selectedInlinePanel = null;
 			}
 		}
 		else {
 			this.buttonGroup.clearSelection ();
 			CardLayout cl = (CardLayout) (SelectOneOfDataPanel.this.dialogsPanel.getLayout ());
-			cl.show (SelectOneOfDataPanel.this.dialogsPanel, EMPTY);
+			cl.show (SelectOneOfDataPanel.this.dialogsPanel, KeyGenerator.EMPTY.toString ());
 				this.selectedInlinePanel = null;
 		}
 	}
