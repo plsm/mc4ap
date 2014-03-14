@@ -12,6 +12,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
+import ui.Key;
 
 /**
  * Comoponent responsible for displaying the elements of a field list.
@@ -92,8 +93,25 @@ public class FieldListCellRendererPanel<D>
 	}
 
 	@Override
+	public <F> FieldListCellRendererPanel handle_editListFieldAny (JButton button, final Object[] getFunc, final Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
+		AnyTypeFieldListEditor<D, F> listEditor,
+		FieldListCellRendererPanel<F> cellRenderer,
+		FieldListCellEditorPanel<D, F> cellEditor,
+		F defaultValue)
+	{
+		this.addDynamicComponent (button);
+		return this;
+	}
+	
+	@Override
 	UIPanel getUIPanel ()
 	{
 		return this.uipanel;
+	}
+
+	@Override
+	Key getKey ()
+	{
+		throw new Error ("Never called.");
 	}
 }
