@@ -116,7 +116,7 @@
         <Component class="javax.swing.JLabel" name="emptyLabel">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
-              <CardConstraints cardName="empty"/>
+              <CardConstraints cardName="EMPTY"/>
             </Constraint>
           </Constraints>
         </Component>

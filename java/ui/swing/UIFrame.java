@@ -21,6 +21,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import ui.Key;
+import ui.KeyGenerator;
 
 /**
  *
@@ -42,10 +44,14 @@ final public class UIFrame<D>
 	 * Semaphore used to block method {@code showFrame()} until the user closes the window.
 	 */
 	final private Semaphore close;
+//	/**
+//	 * Empty panel key.
+//	 */
+//	static private String EMPTY = "empty";
 	/**
-	 * Empty panel key.
+	 * Key generator used to assign keys to panels inserted in the {@code dynamicPanel}.
 	 */
-	static private String EMPTY = "empty";
+	final KeyGenerator keyGenerator = new KeyGenerator ();
 	
 
 	/** Creates new form UIFrame */
@@ -106,21 +112,43 @@ final public class UIFrame<D>
 	 */
 	public UIPanel<D> newUIPanel ()
 	{
-		UIPanel<D> result = new UIPanel<> (frame);
+		UIPanel<D> result = new UIPanel<> (frame, this.keyGenerator.nextKey ());
 		//this.addPanel (result);
-		this.dynamicPanel.add (result, result.key);
+		this.dynamicPanel.add (result, result.key.toString ());
+		return result;
+	}
+	
+	public <F, SF> AnyTypeFieldListEditor<F, SF> newAnyTypeFieldListEditor (
+		String fieldName,
+		Object[] getFunc,
+		Object[] setFunc,
+		Object[] listSizeFunc,
+		Object[] listElementFunc,
+		SF defaultValue
+		)
+	{
+		AnyTypeFieldListEditor<F, SF> result = new AnyTypeFieldListEditor<> (
+			fieldName,
+			this,
+			this.keyGenerator.nextKey (),
+			getFunc,
+			setFunc,
+			listSizeFunc,
+			listElementFunc,
+			defaultValue);
+		this.dynamicPanel.add (result, result.key.toString ());
 		return result;
 	}
 	/**
 	 * Shows the panel with the given key.
 	 */
-	void showPanel (String key, NavigateAction action)
+	void showPanel (Key key, NavigateAction action)
 	{
 		CardLayout cl = (CardLayout) (this.dynamicPanel.getLayout ());
 		this.navigateActions.add (0, action);
 		this.buttonsPanel.setVisible (true);
 		//System.out.println ("showPanel. panel = " + key + " navigateActions = " + this.navigateActions.toString ()); //DEBUG
-		cl.show (this.dynamicPanel, key);
+		cl.show (this.dynamicPanel, key.toString ());
 	}
 	/**
 	 * Adds the given panel to the set of panels that can be shown by pressing one of the buttons in the tool bar.
@@ -128,7 +156,7 @@ final public class UIFrame<D>
 	 */
 	void addPanel (UIPanel<D> panel)
 	{
-		this.dynamicPanel.add (panel, panel.key);
+		this.dynamicPanel.add (panel, panel.key.toString ());
 	}
 	/**
 	 * Checks if there is any {@code UIPanel} being shown in {@code dynamicPanel} and if the user wants to discard any data.
@@ -236,6 +264,7 @@ final public class UIFrame<D>
 	public UIFrame handle_actionIO (JButton button, final Object[] predIO)
 	{
 		ActionListener action = new ActionListener () {
+			@Override
 			public void actionPerformed (ActionEvent evt)
 			{
 				jmercury.runtime.MethodPtr2 funcMeth = ((jmercury.runtime.MethodPtr2) predIO[1]);
@@ -259,7 +288,7 @@ final public class UIFrame<D>
 					//System.out.println ("Setting panel " + panel.key + " data to " + UIFrame.this.data.value); //DEBUG
 					panel.setData (UIFrame.this.data.getValue ());
 					NavigateAction action;
-					action = new NavigateAction (UIFrame.EMPTY) {
+					action = new NavigateAction (KeyGenerator.EMPTY) {
 						@Override
 						public boolean perform ()
 						{
@@ -291,7 +320,7 @@ final public class UIFrame<D>
 					panel.setData (UIFrame.this.data.applyGetFieldFunc (getFieldFunc));
 				
 					NavigateAction action;
-					action = new NavigateAction (UIFrame.EMPTY) {
+					action = new NavigateAction (KeyGenerator.EMPTY) {
 						@Override
 						public boolean perform ()
 						{
@@ -316,7 +345,8 @@ final public class UIFrame<D>
      */
     @SuppressWarnings("unchecked")
    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-   private void initComponents() {
+   private void initComponents()
+   {
 
       javax.swing.JPanel statusPanel = new javax.swing.JPanel();
       buttonsPanel = new javax.swing.JPanel();
@@ -333,16 +363,20 @@ final public class UIFrame<D>
       statusPanel.setLayout(new java.awt.BorderLayout());
 
       okButton.setText("OK");
-      okButton.addActionListener(new java.awt.event.ActionListener() {
-         public void actionPerformed(java.awt.event.ActionEvent evt) {
+      okButton.addActionListener(new java.awt.event.ActionListener()
+      {
+         public void actionPerformed(java.awt.event.ActionEvent evt)
+         {
             okButtonActionPerformed(evt);
          }
       });
       buttonsPanel.add(okButton);
 
       cancelButton.setText("Cancel");
-      cancelButton.addActionListener(new java.awt.event.ActionListener() {
-         public void actionPerformed(java.awt.event.ActionEvent evt) {
+      cancelButton.addActionListener(new java.awt.event.ActionListener()
+      {
+         public void actionPerformed(java.awt.event.ActionEvent evt)
+         {
             cancelButtonActionPerformed(evt);
          }
       });
@@ -357,13 +391,15 @@ final public class UIFrame<D>
       add(toolBar, java.awt.BorderLayout.NORTH);
 
       dynamicPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-      dynamicPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
-         public void componentResized(java.awt.event.ComponentEvent evt) {
+      dynamicPanel.addComponentListener(new java.awt.event.ComponentAdapter()
+      {
+         public void componentResized(java.awt.event.ComponentEvent evt)
+         {
             dynamicPanelComponentResized(evt);
          }
       });
       dynamicPanel.setLayout(new java.awt.CardLayout());
-      dynamicPanel.add(emptyLabel, "empty");
+      dynamicPanel.add(emptyLabel, "EMPTY");
 
       add(dynamicPanel, java.awt.BorderLayout.CENTER);
    }// </editor-fold>//GEN-END:initComponents
@@ -375,7 +411,7 @@ final public class UIFrame<D>
 			this.navigateActions.remove (0);
 			this.buttonsPanel.setVisible (!this.navigateActions.isEmpty ());
 			CardLayout cl = (CardLayout) (this.dynamicPanel.getLayout ());
-			cl.show (this.dynamicPanel, action.key);
+			cl.show (this.dynamicPanel, action.key.toString ());
 		}
    }//GEN-LAST:event_okButtonActionPerformed
 
@@ -383,7 +419,7 @@ final public class UIFrame<D>
 		NavigateAction action = this.navigateActions.remove (0);
 		this.buttonsPanel.setVisible (!this.navigateActions.isEmpty ());
 		CardLayout cl = (CardLayout) (this.dynamicPanel.getLayout ());
-		cl.show (this.dynamicPanel, action.key);
+		cl.show (this.dynamicPanel, action.key.toString ());
 		this.messagesLabel.setText (" ");
    }//GEN-LAST:event_cancelButtonActionPerformed
 
