@@ -9,15 +9,16 @@ import java.awt.Dimension;
 import data.AbstractMercuryReference;
 import data.MercuryReference;
 import javax.swing.table.TableCellEditor;
+import ui.Key;
 
 /**
  * This component allows the user to edit a field list of generic type.
  * 
  * @author pedro
  */
-final class AnyTypeFieldListEditor<D, F>
+final public class AnyTypeFieldListEditor<D, F>
 	extends AbstractFieldListEditorPanel<D, F>
-	implements ComponentPopulate<D>
+//	implements ComponentPopulate<D>
 {
 	/**
 	 * Field name.  This is used to initalise the panel border.
@@ -31,22 +32,45 @@ final class AnyTypeFieldListEditor<D, F>
 	 * Table model used by {@code JTable} component.
 	 */
 	final private FieldList_TableModel fieldList_tableModel;
+	final Key key;
+	
+	DataReference<D> dataReference;
 
-	/**
-	 * Creates new form AnyTypeFieldListEditor
-	 */
-	AnyTypeFieldListEditor (String fieldName, AbstractMercuryReference<D> data, UIFrame frame, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
-			FieldListCellRendererPanel<F> cellRenderer, 
-			FieldListCellEditorPanel<D, F> cellEditor, F defaultValue)
+	AnyTypeFieldListEditor (
+		String fieldName, UIFrame frame, Key key, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
+		F defaultValue)
 	{
-		super (data, frame, getFunc, setFunc, listSizeFunc, listElementFunc);
+		this (
+			fieldName,
+			frame,
+			key,
+			getFunc,
+			setFunc,
+			listSizeFunc,
+			listElementFunc,
+			defaultValue,
+			new DataReference<D> (frame));
+	}
+	
+	private AnyTypeFieldListEditor (
+		String fieldName, UIFrame frame, Key key, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
+		F defaultValue,
+		DataReference<D> dataReference)
+	{
+		super (dataReference, frame, getFunc, setFunc, listSizeFunc, listElementFunc);
 		this.fieldName = fieldName;
 		this.defaultValue = defaultValue;
 		this.fieldList_tableModel = new FieldList_TableModel ();
+		this.key = key;
+		this.dataReference = dataReference;
 		initComponents ();
+	}
+	
+	void setCellRendererEditor (FieldListCellRendererPanel<F> cellRenderer, FieldListCellEditorPanel<D, F> cellEditor)
+	{
 		cellEditor.validate ();
 		cellRenderer.validate ();
-		this.fieldList_table.setRowHeight (
+		int rowHeight =
 			16 +
 			Math.max (
 				cellRenderer.getSize ().height,
@@ -54,22 +78,59 @@ final class AnyTypeFieldListEditor<D, F>
 				cellRenderer.getPreferredSize ().height,
 			Math.max (
 				cellEditor.getPreferredSize ().height,
-				cellEditor.getSize ().height
-			))));
+				cellEditor.getSize ().height)));
+		this.fieldList_table.setRowHeight (rowHeight);
 		this.fieldList_table.getTableHeader ().setVisible (false);
 		this.fieldList_table.setDefaultRenderer (Object.class, cellRenderer);
 		this.fieldList_table.setDefaultEditor (Object.class, cellEditor);
-		cellEditor.supData = this;
+//		this.fieldList_table.setPreferredSize (new Dimension (this.fieldList_table.getPreferredSize ().width, (int) (1.5 * rowHeight)));
+		this.validate ();
+		this.repaint ();
 	}
+	
+//	/**
+//	 * Creates new form AnyTypeFieldListEditor
+//	 */
+//	AnyTypeFieldListEditor (String fieldName, AbstractMercuryReference<D> data, UIFrame frame, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
+//			FieldListCellRendererPanel<F> cellRenderer, 
+//			FieldListCellEditorPanel<D, F> cellEditor, F defaultValue)
+//	{
+//		super (data, frame, getFunc, setFunc, listSizeFunc, listElementFunc);
+//		this.fieldName = fieldName;
+//		this.defaultValue = defaultValue;
+//		this.fieldList_tableModel = new FieldList_TableModel ();
+//		this.key = null;
+//		initComponents ();
+//		cellEditor.validate ();
+//		cellRenderer.validate ();
+//		int rowHeight =
+//			16 +
+//			Math.max (
+//				cellRenderer.getSize ().height,
+//			Math.max (
+//				cellRenderer.getPreferredSize ().height,
+//			Math.max (
+//				cellEditor.getPreferredSize ().height,
+//				cellEditor.getSize ().height)));
+//		this.fieldList_table.setRowHeight (rowHeight);
+//		this.fieldList_table.getTableHeader ().setVisible (false);
+//		this.fieldList_table.setDefaultRenderer (Object.class, cellRenderer);
+//		this.fieldList_table.setDefaultEditor (Object.class, cellEditor);
+//		this.fieldList_table.setPreferredSize (new Dimension (this.fieldList_table.getPreferredSize ().width, (int) (1.5 * rowHeight)));
+//		cellEditor.supData = this;
+//	}
 
-	@Override
-	public void valueChanged (MercuryReference<D> dummy)
+	void setValue (D value)
 	{
-		this.fieldList_tableModel.fireTableDataChanged ();
+		
 	}
+//	@Override
+//	public void valueChanged (MercuryReference<D> dummy)
+//	{
+//		this.fieldList_tableModel.fireTableDataChanged ();
+//	}
 
-	@Override
-	public boolean commitValue ()
+	boolean commitValue ()
 	{
 		TableCellEditor tce = this.fieldList_table.getCellEditor ();
 		if (tce != null) {
