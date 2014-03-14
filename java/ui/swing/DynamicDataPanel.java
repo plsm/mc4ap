@@ -5,8 +5,6 @@
 
 package ui.swing;
 
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -14,7 +12,6 @@ import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Deque;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -28,9 +25,11 @@ import data.FieldReference;
 import data.closure.GetFieldFunc;
 import data.closure.SetFieldFunc;
 import data.closure.UpdateDataFunc;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.text.ParseException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import jmercury.list.List_1;
+import ui.Key;
 
 /**
  * Base class of swing panels that are initialised during runtime by the mercury backend.  The public methods in this class match the constructors of mercury type {@code dialog(D)}.
@@ -51,10 +50,6 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	 */
 	static final private java.awt.Insets defaultInsets
 		= new java.awt.Insets (2, 2, 2, 2);
-//	/**
-//	 * LIFO panel queue used in the runtime user interface initialisation.  The first panel in this queue is the enclosing class.  Further panels are inserted by method {@code beginPanel(String)} which receives the panel title border.
-//	 */
-//	final private Deque<DynamicPanel> panels;
 	
 	transient protected boolean debug = true;
 	private int nextComponentGridY = 0;
@@ -99,7 +94,10 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	}
 	
 	/**
-	 * Construct an inline panel where swing components to edit this {@code UIPanel} Mercury data can be placed.  Inline panels are bordered panels that visually group swing components.
+	 * Construct an inline panel where swing components to edit this
+	 * {@code UIPanel} Mercury data can be placed. Inline panels are bordered
+	 * panels that visually group swing components.
+	 *
 	 * @return 
 	 */
 	public InlinePanelField<D, D> newInlinePanelForData (String panelName)
@@ -115,7 +113,10 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		return result;
 	}
 	/**
-	 * Construct an inline panel where swing components to edit this {@code UIPanel} Mercury data can be placed.  Inline panels are bordered panels that visually group swing components.
+	 * Construct an inline panel where swing components to edit this
+	 * {@code UIPanel} Mercury data can be placed. Inline panels are bordered
+	 * panels that visually group swing components.
+	 *
 	 * @return 
 	 */
 	public <F> InlinePanelField<D, F> newInlinePanelForFieldData (String panelName, Object[] getFieldFunc, Object[] setFieldFunc)
@@ -152,9 +153,14 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		FieldListCellRendererPanel result = new FieldListCellRendererPanel (this.frame, this.getUIPanel ());
 		return result;
 	}
-	public FieldListCellEditorPanel newFieldListCellEditorPanel (Object[] setFieldListElement)
+	public <D1, F1> FieldListCellEditorPanel<D1, F1> newFieldListCellEditorPanel (AnyTypeFieldListEditor<D1, F1> listEditor, Object[] setFieldListElement)
 	{
-		FieldListCellEditorPanel result = new FieldListCellEditorPanel (this.frame, this.getUIPanel (), setFieldListElement);
+		FieldListCellEditorPanel<D1, F1> result
+			= new FieldListCellEditorPanel<> (
+				this.frame,
+				this.getUIPanel (),
+				setFieldListElement,
+				listEditor);
 		return result;
 	}
 	
@@ -164,6 +170,12 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	 * @return 
 	 */
 	abstract UIPanel getUIPanel ();
+	/**
+	 * Get the key this panel is known by {@code UIFrame} dynamic panel.
+	 * 
+	 * @return a key
+	 */
+	abstract Key getKey ();
 	//************************************************************
 //	/**
 //	 * Adds a component to this panel.  This panel uses a {@code GridBagLayout}.  Components added by methods {@code handle_XXX} are arranged in <i>n</i> rows by 2 columns.
@@ -200,15 +212,36 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	
 	protected void addDynamicComponent (JComponent component)
 	{
-		this.add (component);
+		GridBagConstraints gridBagConstraints;
+		this.nextComponentGridY++;
+		gridBagConstraints = new GridBagConstraints ();
+		gridBagConstraints.gridy = this.nextComponentGridY;
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.insets = DynamicDataPanel.defaultInsets;
+		this.add (component, gridBagConstraints);
 	}
 	
 	protected void addDynamicComponents (JComponent leftComponent, JComponent rightComponent)
 	{
-		JPanel panel = new JPanel (new FlowLayout ());
-		panel.add (leftComponent);
-		panel.add (rightComponent);
-		this.add (panel);
+		GridBagConstraints gridBagConstraints;
+		this.nextComponentGridY++;
+		gridBagConstraints = new GridBagConstraints ();
+		gridBagConstraints.gridy = this.nextComponentGridY;
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridwidth = 1;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.insets = DynamicDataPanel.defaultInsets;
+		this.add (leftComponent, gridBagConstraints);
+		gridBagConstraints = new GridBagConstraints ();
+		gridBagConstraints.gridy = this.nextComponentGridY;
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridwidth = 1;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.insets = DynamicDataPanel.defaultInsets;
+		this.add (rightComponent, gridBagConstraints);
 	}
 	
 	//************************************************************
@@ -243,7 +276,9 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 
 	// methods to handle {@code dialogAction(D)} type constructors.
 	/**
-	 * Handles constructor {@code di(interfaceData)} from type {@code dialogItem(D)}.  This constructor does not have an associated action.  Therefore we only insert a label in the panel.
+	 * Handles constructor {@code di(interfaceData)} from type
+	 * {@code dialogItem(D)}. This constructor does not have an associated
+	 * action. Therefore we only insert a label in the panel.
 	 */
 	final public P handle_noaction (JLabel label)
 	{
@@ -252,11 +287,35 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		return (P) this;
 	}
 	/**
-	 * Handles constructor {@code subdialog(D)}.  When the user clicks the button a new panel appers to edit the same data of this panel.
+	 * Handles constructor {@code subdialog(D)}. When the user clicks the button
+	 * a new panel appers to edit the same data of this panel.
 	 */
-	abstract public P handle_subdialog (JButton button, final UIPanel<D> childPanel);
+	public P handle_subdialog (JButton button, final UIPanel<D> childPanel)
+	{
+		this.addDynamicComponent (button);
+		NavigateActionListener nal = new NavigateActionListener (this.getKey ())
+		{
+			@Override
+			boolean perform ()
+			{
+				return
+					childPanel.commitValue ()
+					&& DynamicDataPanel.this.setData (childPanel.data.getValue ());
+			}
+			@Override
+			public void actionPerformed (ActionEvent e)
+			{
+				childPanel.setData (DynamicDataPanel.this.data.getValue ());
+				DynamicDataPanel.this.frame.showPanel (childPanel.key, this);
+			}
+		};
+		button.addActionListener (nal);
+		return (P) this;
+	}
+	  
 	/**
-	 * Handles constructor {@code newValue(T)}.   When the user selects this dialog option, the data takes value {@code T}.
+	 * Handles constructor {@code newValue(T)}. When the user selects this dialog
+	 * option, the data takes value {@code T}.
 	 */
 	final public P handle_newValue (JButton button, final D newValue)
 	{
@@ -275,7 +334,8 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		return (P) this;
 	}
 	/**
-	 * Handles constructor {@code updateData(func(T)=T)}.  When the user selects this dialog item, the data is updated according to the given function.
+	 * Handles constructor {@code updateData(func(T)=T)}. When the user selects
+	 * this dialog item, the data is updated according to the given function.
 	 */
 	final public P handle_updateData (JButton button, final Object[] setFunc)
 	{
@@ -297,21 +357,38 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		return (P) this;
 	}
 	/**
-	 * Handles constructor {@code editField(get(D,F),set(D,F),dialog(F))}.  Adds a button that shows the panel to edit a field of the data shown by this panel.
+	 * Handles constructor {@code editField(get(D,F),set(D,F),dialog(F))}. Adds a
+	 * button that shows the panel to edit a field of the data shown by this
+	 * panel.
 	 */
 	public <F> P handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel<F> childPanel)
 	{
-		System.out.println ("BLoooo");
-		System.out.println (this.getClass ().getName ());
-		if (this instanceof InlinePanelField) {
-			InlinePanelField<D, F> ipf = (InlinePanelField) this;
-			ipf.handle_editField (button, getFunc, setFunc, childPanel);
-			return (P) ipf;
-		 }
-		 return null;
-	 }
+		this.addDynamicComponent (button);
+		NavigateActionListener nal = new NavigateActionListener (this.getKey ())
+		{
+			GetFieldFunc<D, F> getFieldFunc = new GetFieldFunc<> (getFunc);
+			SetFieldFunc<D, F> setFieldFunc = new SetFieldFunc<> (setFunc);
+			@Override
+			boolean perform ()
+			{
+				return
+					childPanel.commitValue ()
+					&& DynamicDataPanel.this.data.applySetFieldFunc (setFieldFunc, childPanel.data.getValue ());
+			}
+			
+			@Override
+			public void actionPerformed (ActionEvent e)
+			{
+				childPanel.setData (DynamicDataPanel.this.data.applyGetFieldFunc (getFieldFunc));
+				DynamicDataPanel.this.frame.showPanel (childPanel.key, this);
+			}
+		};
+		button.addActionListener (nal);
+		return (P) this;
+	}
 	/**
-	 * Handles a {@code updateFieldInt(get(D,int), set(D, int))}. Adds a {@code JFormattedTextField} to edit an integer value.
+	 * Handles a {@code updateFieldInt(get(D,int), set(D, int))}. Adds a
+	 * {@code JFormattedTextField} to edit an integer value.
 	 */
 	public P handle_updateFieldInt (JLabel label, Object[] getFunc, Object[] setFunc)
 	{
@@ -349,7 +426,8 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		return (P) this;
 	}
 	/**
-	 * Handles a {@code updateFieldInt(get(D,string), set(D,string))}. Adds a {@code JFormattedTextField} to edit an integer value.
+	 * Handles a {@code updateFieldInt(get(D,string), set(D,string))}. Adds a
+	 * {@code JFormattedTextField} to edit an integer value.
 	 */
 	public P handle_updateFieldString (JLabel label, Object[] getFunc, Object[] setPred)
 	{
@@ -377,7 +455,8 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		return (P) this;
 	}
 	/**
-	 * Handles a {@code updateFieldFloat(get(D,float), set(D,float))}. Adds a {@code JFormattedTextField} to edit a floating point value.
+	 * Handles a {@code updateFieldFloat(get(D,float), set(D,float))}. Adds a
+	 * {@code JFormattedTextField} to edit a floating point value.
 	 */
 	public P handle_updateFieldFloat (JLabel label, Object[] getFunc, Object[] setFunc)
 	{
@@ -416,7 +495,8 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		return (P) this;
 	}
 	/**
-	 * Handles a {@code updateFieldFloat(get(D,float), set(D,float))}. Adds a {@code JFormattedTextField} to edit a floating point value.
+	 * Handles a {@code updateFieldFloat(get(D,float), set(D,float))}. Adds a
+	 * {@code JFormattedTextField} to edit a floating point value.
 	 */
 	public P handle_updateFieldBool (final JCheckBox checkBox, Object[] getFunc, final Object[] setFunc)
 	{
@@ -430,7 +510,7 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 			{
 				DynamicDataPanel.this.data.applySetFieldFunc (
 					new SetFieldFunc<D,jmercury.bool.Bool_0> (setFunc),
-					checkBox.isEnabled () ? jmercury.bool.YES : jmercury.bool.NO);
+					checkBox.isSelected () ? jmercury.bool.YES : jmercury.bool.NO);
 			}
 		};
 		checkBox.addActionListener (action);
@@ -438,17 +518,58 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		this.componentsPopulate.add (new CheckBoxPopulate (getFunc, setFunc, checkBox));
 		return (P) this;
 	}
-	public P handle_editListFieldAny (String field, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
-		FieldListCellRendererPanel cellRenderer, FieldListCellEditorPanel cellEditor, Object defaultValue)
+	/**
+	 * 
+	 * @param <F>
+	 * @param button
+	 * @param getFunc
+	 * @param setFunc
+	 * @param listSizeFunc
+	 * @param listElementFunc
+	 * @param cellRenderer
+	 * @param cellEditor
+	 * @param defaultValue
+	 * @return 
+	 */
+	public <F> P handle_editListFieldAny (JButton button, final Object[] getFunc, final Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
+		final AnyTypeFieldListEditor<D, F> listEditor,
+		FieldListCellRendererPanel<F> cellRenderer,
+		FieldListCellEditorPanel<D, F> cellEditor,
+		F defaultValue)
 	{
-		AnyTypeFieldListEditor listEditor = new AnyTypeFieldListEditor (
-			field, this.data, this.frame,
-			getFunc, setFunc, listSizeFunc, listElementFunc,
-			cellRenderer, cellEditor,
-			defaultValue);
-		this.componentsPopulate.add (listEditor);
-		this.addDynamicComponent (listEditor);
-		//this.addComponent (listEditor, true, true, true);
+//		final AnyTypeFieldListEditor<D, F> listEditor =
+//			this.frame.newAnyTypeFieldListEditor (
+//				button.getText (),
+//				getFunc,
+//				setFunc,
+//				listSizeFunc,
+//				listElementFunc,
+//				cellRenderer,
+//				cellEditor,
+//				defaultValue);
+		this.addDynamicComponent (button);
+		listEditor.setCellRendererEditor (cellRenderer, cellEditor);
+		NavigateActionListener nal = new NavigateActionListener (this.getKey ())
+		{
+			GetFieldFunc<D, List_1<F>> getFieldFunc = new GetFieldFunc<> (getFunc);
+			SetFieldFunc<D, List_1<F>> setFieldFunc = new SetFieldFunc<> (setFunc);
+			@Override
+			boolean perform ()
+			{
+				return
+					listEditor.commitValue ()
+					&& DynamicDataPanel.this.data.applySetFieldFunc (setFieldFunc, listEditor.data.getValue ());
+			}
+			
+			@Override
+			public void actionPerformed (ActionEvent e)
+			{
+				listEditor.dataReference.setValue (DynamicDataPanel.this.data.getValue ());
+				listEditor.data.setValue (DynamicDataPanel.this.data.applyGetFieldFunc (getFieldFunc));
+				DynamicDataPanel.this.frame.showPanel (listEditor.key, this);
+			}
+		};
+		button.addActionListener (nal);
 		return (P) this;
 	}
 	/**
@@ -583,7 +704,7 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		@Override
 		public void valueChanged (MercuryReference<D> data)
 		{
-			this.checkbox.setEnabled (data.applyGetFieldFunc (this.getFieldFunc) == jmercury.bool.YES);
+			this.checkbox.setSelected (data.applyGetFieldFunc (this.getFieldFunc) == jmercury.bool.YES);
 		}
 
 		@Override
@@ -721,19 +842,7 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 //			return gridBagConstraints;
 //		}
 //	}
-/*
- * 
-		Container parent = this.getParent ();
-		if (parent != null) {
-			System.out.println ("Parent: " + parent.getSize ());
-		}
-		System.out.println ("Panel size: " + this.getSize ());
-		Dimension d = new Dimension ((int) (this.getSize ().width * 0.9), 0);
-		this.strechSeparator.setSize (d);
-		this.strechSeparator.setMinimumSize (d);
-		this.strechSeparator.setPreferredSize (d);
-				System.out.println ("New strech  " + d);
- */
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -741,11 +850,16 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
      */
     @SuppressWarnings("unchecked")
    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-   private void initComponents() {
+   private void initComponents()
+   {
 
-      setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.Y_AXIS));
+      setLayout(new java.awt.GridBagLayout());
    }// </editor-fold>//GEN-END:initComponents
 
+//			Dimension d = new Dimension ((int) (this.getSize ().width * 0.75), 0);
+//		this.strechSeparator.setSize (d);
+//		this.strechSeparator.setMinimumSize (d);
+//		this.strechSeparator.setPreferredSize (d);
 
    // Variables declaration - do not modify//GEN-BEGIN:variables
    // End of variables declaration//GEN-END:variables
