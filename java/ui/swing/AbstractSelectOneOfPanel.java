@@ -11,6 +11,7 @@ import ui.KeyGenerator;
 
 import java.util.Vector;
 import javax.swing.JRadioButton;
+import ui.Key;
 
 /**
  * A panel that presents a set of radio buttons.
@@ -25,7 +26,7 @@ abstract public class AbstractSelectOneOfPanel<D1, D2>
 	 * the user presses them or when the field corresponds to such radio button,
 	 * an empty label is displayed.
 	 */
-	static protected String EMPTY = "empty";
+//	static protected String EMPTY = "empty";
 	/**
 	 * The panel that has been selected after pressing a radio button.
 	 */
@@ -137,12 +138,12 @@ abstract public class AbstractSelectOneOfPanel<D1, D2>
 		/**
 		 * The inline panel key.
 		 */
-		final String key;
+		final Key key;
 		ButtonPanelInfo (JRadioButton button)
 		{
 			this (button, null, null);
 		}
-		ButtonPanelInfo (JRadioButton button, InlinePanelField<D1, D2> panel, String key)
+		ButtonPanelInfo (JRadioButton button, InlinePanelField<D1, D2> panel, Key key)
 		{
 			this.panel = panel;
 			this.button = button;
