@@ -1,5 +1,5 @@
 /**
- * An User Interface implemented in the Java SWING
+ * An User Interface implemented in the Java SWING.
 
  * @author Pedro Mariano
  * @version 1.0 2013/08/10
@@ -39,7 +39,11 @@
 
 :- type soopanel(D).
 
-:- pragma foreign_type("Java", soopanel(D), "ui.swing.SelectOneOfPanel").
+:- pragma foreign_type("Java", soopanel(D), "ui.swing.AbstractSelectOneOfPanel").
+
+:- type listEditor(F, E).
+
+:- pragma foreign_type("Java", listEditor(F, E), "ui.swing.AnyTypeFieldListEditor").
 
 :- type label.
 
@@ -185,6 +189,7 @@ setMao(Debug, Maos, Index) = Result :-
 	"
 	).
 
+
 /**
  * initCellRenderer(Renderer, !Frame).
 
@@ -220,19 +225,42 @@ setMao(Debug, Maos, Index) = Result :-
  * maybe_error(D)} value to indicate if the replace is successful or not.
   
  */
-:- pred initCellEditor(ddpanel(E), func(F, E, int) = setResult(F), ddpanel(F)).
-:- mode initCellEditor(uo, in, ui) is det.
+:- pred initCellEditor(
+	listEditor(F, E),
+	ddpanel(E),
+
+	string,
+	get(F, list(E)),
+	set(F, list(E)),
+	func(list(E)) = int,
+	func(list(E), int) = E,
+	E,
+
+	func(F, E, int) = setResult(F),
+	ddpanel(F),
+	frame(D)
+	).
+:- mode initCellEditor(uo, uo, in, in, in, in, in, in, in, ui, ui) is det.
 
 :- pragma foreign_proc(
 	"Java",
 	initCellEditor(
+		ListEditor::uo,
 		Result::uo,
+		PanelName::in,
+		GetFunc::in,
+		SetFunc::in,
+		ListSizeFunc::in,
+		ListElementFunc::in,
+		DefaultValue::in,
 		SetFieldListElement::in,
-		Panel::ui
+		Panel::ui,
+		Frame::ui			
 	),
 	[will_not_call_mercury, promise_pure],
 	"
-	Result = Panel.newFieldListCellEditorPanel (SetFieldListElement);
+	ListEditor = Frame.newAnyTypeFieldListEditor (PanelName, GetFunc, SetFunc, ListSizeFunc, ListElementFunc, DefaultValue);
+	Result = Panel.newFieldListCellEditorPanel (ListEditor, SetFieldListElement);
 	"
 	).
 
@@ -250,7 +278,7 @@ setMao(Debug, Maos, Index) = Result :-
 		PanelUO::uo),
 	[will_not_call_mercury, promise_pure],
 	"
-	Result = PanelDI.newSelectOneOfPanel (PanelName, FuncSelectedChoice, FuncSelectChoice);
+	Result = PanelDI.newSelectOneOfFieldPanel (PanelName, FuncSelectedChoice, FuncSelectChoice);
 	PanelUO = PanelDI;
 	"
 	).
@@ -268,7 +296,7 @@ setMao(Debug, Maos, Index) = Result :-
 		PanelUO::uo),
 	[will_not_call_mercury, promise_pure],
 	"
-	Result = PanelDI.newSelectOneOfPanel (PanelName, FuncSelectedChoice);
+	Result = PanelDI.newSelectOneOfDataPanel (PanelName, FuncSelectedChoice);
 	PanelUO = PanelDI;
 	"
 	).
@@ -549,29 +577,44 @@ buildDialogForm(Flat, di(InterfaceData, Action), !Frame, !Panel) :-
 	handle_updateFieldBool(createCheckbox(InterfaceData), GetFunc, SetFunc, !Panel)
 	;
 	Action = editListFieldAny(GetFunc, SetFunc, DefaultValue, SubDialog),
-	(
-		Flat = yes,
-		initPanel(InitPanel, !Frame),
-		ListDialogItems = [di(InterfaceData, Action)],
-		list.foldl2(trace_buildDialogForm(no), ListDialogItems, !Frame, InitPanel, ShowPanel),
-		handle_subdialog(createButton(InterfaceData), ShowPanel, !Panel)
-%		handle_editField_panel(createButton(InterfaceData), GetFunc, SetFunc, ShowPanel, !Panel)
-		;
-		Flat = no,
-		SetFieldListElement = setFieldListElement(GetFunc, SetFunc),
-		initCellRenderer(InitCellRenderer, !.Panel),
-		list.foldl2(trace_buildDialogForm(yes), SubDialog, !Frame, InitCellRenderer, ShowCellRenderer),
-		%list.foldl2(     buildDialogForm(yes), SubDialog, !Frame, InitCellRenderer, ShowCellRenderer),
-		initCellEditor(InitCellEditor, SetFieldListElement, !.Panel),
-		list.foldl2(trace_buildDialogForm(yes), SubDialog, !Frame, InitCellEditor, ShowCellEditor),
-		%list.foldl2(     buildDialogForm(yes), SubDialog, !Frame, InitCellEditor, ShowCellEditor),
-		handle_editListFieldAny(
-			toString(InterfaceData),
-			GetFunc, SetFunc,
-			list.length, list.det_index0,
-			ShowCellRenderer, ShowCellEditor, DefaultValue, !Panel
-		)
+	SetFieldListElement = setFieldListElement(GetFunc, SetFunc),
+	initCellRenderer(InitCellRenderer, !.Panel),
+	list.foldl2(trace_buildDialogForm(yes), SubDialog, !Frame, InitCellRenderer, ShowCellRenderer),
+	initCellEditor(
+		ListEditor, InitCellEditor,
+		toString(InterfaceData),
+		GetFunc, SetFunc, list.length, list.det_index0, DefaultValue, SetFieldListElement,
+		!.Panel, !.Frame),
+	list.foldl2(trace_buildDialogForm(yes), SubDialog, !Frame, InitCellEditor, ShowCellEditor),
+	handle_editListFieldAny(
+		createButton(InterfaceData),
+		GetFunc, SetFunc,
+		list.length, list.det_index0,
+		ListEditor, ShowCellRenderer, ShowCellEditor, DefaultValue, !Panel
 	)
+% 	(
+% 		Flat = yes,
+% 		initPanel(InitPanel, !Frame),
+% 		ListDialogItems = [di(InterfaceData, Action)],
+% 		list.foldl2(trace_buildDialogForm(no), ListDialogItems, !Frame, InitPanel, ShowPanel),
+% 		handle_subdialog(createButton(InterfaceData), ShowPanel, !Panel)
+% %		handle_editField_panel(createButton(InterfaceData), GetFunc, SetFunc, ShowPanel, !Panel)
+% 		;
+% 		Flat = no,
+% 		SetFieldListElement = setFieldListElement(GetFunc, SetFunc),
+% 		initCellRenderer(InitCellRenderer, !.Panel),
+% 		list.foldl2(trace_buildDialogForm(yes), SubDialog, !Frame, InitCellRenderer, ShowCellRenderer),
+% 		%list.foldl2(     buildDialogForm(yes), SubDialog, !Frame, InitCellRenderer, ShowCellRenderer),
+% 		initCellEditor(InitCellEditor, SetFieldListElement, !.Panel),
+% 		list.foldl2(trace_buildDialogForm(yes), SubDialog, !Frame, InitCellEditor, ShowCellEditor),
+% 		%list.foldl2(     buildDialogForm(yes), SubDialog, !Frame, InitCellEditor, ShowCellEditor),
+% 		handle_editListFieldAny(
+% 			toString(InterfaceData),
+% 			GetFunc, SetFunc,
+% 			list.length, list.det_index0,
+% 			ShowCellRenderer, ShowCellEditor, DefaultValue, !Panel
+% 		)
+% 	)
 	;
 	Action = updateListFieldInt(GetFunc, SetFunc),
 	handle_updateListFieldInt(toString(InterfaceData), GetFunc, SetFunc, !Panel)
@@ -698,9 +741,7 @@ buildDialogForm(Flat, di(InterfaceData, Action), !Frame, !Panel) :-
 	handle_editField_panel(Button::in, GetFunc::in, SetFunc::in, NewPanel::ui, PanelDI::di, PanelUO::uo),
 	[will_not_call_mercury, promise_pure],
 	"
-							 System.out.println (""**"" + PanelDI.getClass ().getName ());
 	PanelUO = PanelDI.handle_editField (Button, GetFunc, SetFunc, (ui.swing.UIPanel) NewPanel);
-	System.out.println (""After"");
 	"
 	).
 
@@ -755,25 +796,26 @@ buildDialogForm(Flat, di(InterfaceData, Action), !Frame, !Panel) :-
 
 
 :- pred handle_editListFieldAny(
-	string, get(D, list(F)), set(D, list(F)),
+	button, get(D, list(F)), set(D, list(F)),
 	func(list(F)) = int, func(list(F), int) = F,
-	ddpanel(F), ddpanel(F), F,
+	listEditor(D, F), ddpanel(F), ddpanel(F), F,
 	ddpanel(D), ddpanel(D)).
-:- mode handle_editListFieldAny(in, in,  in, in,  in, in,  in,  in, di, uo) is det.
+:- mode handle_editListFieldAny(in, in, in,  in, in,  in, in,  in,  in, di, uo) is det.
 
 :- pragma foreign_proc(
 	"Java",
 	handle_editListFieldAny(
-		FieldName::in,
+		Button::in,
 		GetFunc::in, SetFunc::in,
 		ListSizeFunc::in, ListElementFunc::in,
-		ShowCellRenderer::in, ShowCellEditor::in, DefaultValue::in,
+		ListEditor::in, ShowCellRenderer::in, ShowCellEditor::in, DefaultValue::in,
 		PanelDI::di, PanelUO::uo),
 	[will_not_call_mercury, promise_pure],
 	"
 	PanelUO = PanelDI.handle_editListFieldAny (
-		FieldName,
+		Button,
 		GetFunc, SetFunc, ListSizeFunc, ListElementFunc,
+		ListEditor,
 		(ui.swing.FieldListCellRendererPanel) ShowCellRenderer,
 		(ui.swing.FieldListCellEditorPanel) ShowCellEditor, DefaultValue);
 	"
