@@ -9,6 +9,7 @@ import data.closure.GetFieldFunc;
 import data.MercuryReference;
 import data.FieldReference;
 import data.closure.SetFieldFunc;
+import ui.Key;
 
 /**
  * A panel inside some {@code UIPanel} that displays and can be used to edit a field of {@code UIPanel} mercury data reference.
@@ -70,61 +71,61 @@ final public class InlinePanelField<D1, D2>
    // Variables declaration - do not modify//GEN-BEGIN:variables
    // End of variables declaration//GEN-END:variables
 
-	@Override
-	public InlinePanelField handle_subdialog (JButton button, final UIPanel<D2> childPanel)
-	{
-		this.addDynamicComponent (button);
-		ActionListener action;
-		action = new ActionListener () {
-			@Override
-			public void actionPerformed (ActionEvent evt)
-			{
-				childPanel.setData (InlinePanelField.this.data.getValue ());
-				NavigateAction action = new NavigateAction (InlinePanelField.this.getUIPanel ().key)
-				{
-					@Override
-					public boolean perform ()
-					{
-						return
-							childPanel.commitValue ()
-							&& InlinePanelField.this.setData (childPanel.data.getValue ());
-					}
-				};
-				InlinePanelField.this.frame.showPanel (childPanel.key, action);
-			}
-		};
-		button.addActionListener (action);
-		return this;
-		//throw new IllegalStateException ("InlinePanelField does not have buttons that open other panels");
-	}
-
-	@Override
-	public <F> InlinePanelField handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel<F> childPanel)
-	{
-		this.addDynamicComponent (button);
-		ActionListener action;
-		action = new ActionListener () {
-			GetFieldFunc<D2, F> getFieldFunc = new GetFieldFunc<> (getFunc);
-			SetFieldFunc<D2, F> setFieldFunc = new SetFieldFunc<> (setFunc);
-			@Override
-			public void actionPerformed (java.awt.event.ActionEvent evt)
-			{
-				childPanel.setData (InlinePanelField.this.data.applyGetFieldFunc (getFieldFunc));
-				NavigateAction action = new NavigateAction (InlinePanelField.this.getUIPanel ().key) {
-					@Override
-					public boolean perform ()
-					{
-						return
-							childPanel.commitValue ()
-							&& InlinePanelField.this.data.applySetFieldFunc (setFieldFunc, childPanel.data.getValue ());
-					}
-				};
-				InlinePanelField.this.frame.showPanel (childPanel.key, action);
-			}
-		};
-		button.addActionListener (action);
-		return this;
-	}
+//	@Override
+//	public InlinePanelField handle_subdialog (JButton button, final UIPanel<D2> childPanel)
+//	{
+//		this.addDynamicComponent (button);
+//		ActionListener action;
+//		action = new ActionListener () {
+//			@Override
+//			public void actionPerformed (ActionEvent evt)
+//			{
+//				childPanel.setData (InlinePanelField.this.data.getValue ());
+//				NavigateAction action = new NavigateAction (InlinePanelField.this.getUIPanel ().key)
+//				{
+//					@Override
+//					public boolean perform ()
+//					{
+//						return
+//							childPanel.commitValue ()
+//							&& InlinePanelField.this.setData (childPanel.data.getValue ());
+//					}
+//				};
+//				InlinePanelField.this.frame.showPanel (childPanel.key, action);
+//			}
+//		};
+//		button.addActionListener (action);
+//		return this;
+//		//throw new IllegalStateException ("InlinePanelField does not have buttons that open other panels");
+//	}
+//
+//	@Override
+//	public <F> InlinePanelField handle_editField (JButton button, final Object[] getFunc, final Object[] setFunc, final UIPanel<F> childPanel)
+//	{
+//		this.addDynamicComponent (button);
+//		ActionListener action;
+//		action = new ActionListener () {
+//			GetFieldFunc<D2, F> getFieldFunc = new GetFieldFunc<> (getFunc);
+//			SetFieldFunc<D2, F> setFieldFunc = new SetFieldFunc<> (setFunc);
+//			@Override
+//			public void actionPerformed (java.awt.event.ActionEvent evt)
+//			{
+//				childPanel.setData (InlinePanelField.this.data.applyGetFieldFunc (getFieldFunc));
+//				NavigateAction action = new NavigateAction (InlinePanelField.this.getUIPanel ().key) {
+//					@Override
+//					public boolean perform ()
+//					{
+//						return
+//							childPanel.commitValue ()
+//							&& InlinePanelField.this.data.applySetFieldFunc (setFieldFunc, childPanel.data.getValue ());
+//					}
+//				};
+//				InlinePanelField.this.frame.showPanel (childPanel.key, action);
+//			}
+//		};
+//		button.addActionListener (action);
+//		return this;
+//	}
 
 	@Override
 	UIPanel getUIPanel ()
@@ -138,4 +139,10 @@ final public class InlinePanelField<D1, D2>
          this.getSize ().height));
    System.out.println (" to " + this.getPreferredSize ());
 	 */
+
+	@Override
+	Key getKey ()
+	{
+		return this.uipanel.key;
+	}
 }
