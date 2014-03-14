@@ -25,6 +25,7 @@ import javax.swing.JRadioButton;
 import jmercury.maybe.Maybe_1;
 import jmercury.userInterface;
 import jmercury.userInterface.CurrentChoice_1;
+import ui.Key;
 
 /**
  * A panel that presents a set of radio buttons.
@@ -125,7 +126,7 @@ final class SelectOneOfPanel<D, F>
 			@Override
 			public void actionPerformed (ActionEvent e) {
 				CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
-				cl.show (SelectOneOfPanel.this.dialogsPanel, EMPTY);
+				cl.show (SelectOneOfPanel.this.dialogsPanel, KeyGenerator.EMPTY.toString ());
 				SelectOneOfPanel.this.selectedInlinePanel = null;
 				SetResult_1<SelectChoice_2<D, F> > object = scf.apply (SelectOneOfPanel.this.data.getValue (), index);
 				if (object instanceof SetResult_1.Ok_1) {
@@ -144,10 +145,10 @@ final class SelectOneOfPanel<D, F>
 	{
 		this.radioButtonsPanel.add (button);
 		this.buttonGroup.add (button);
-		final String key = keyGenerator.nextKey ();
+		final Key key = keyGenerator.nextKey ();
 		ButtonPanelInfo bpi = new ButtonPanelInfo (button, panel, key);
 		this.buttonPanelInfo.insertElementAt (bpi, this.numberRadioButtons);
-		this.dialogsPanel.add (panel, key);
+		this.dialogsPanel.add (panel, key.toString ());
 		button.addActionListener (new ActionListener () {
 			int index = SelectOneOfPanel.this.numberRadioButtons++;
 			SelectFieldChoiceFunc<D,F> scf = new SelectFieldChoiceFunc<> (selectChoiceFunc);
@@ -157,7 +158,7 @@ final class SelectOneOfPanel<D, F>
 				if (object instanceof SetResult_1.Ok_1) {
 					SetResult_1.Ok_1<SelectChoice_2<D, F> > ok = (SetResult_1.Ok_1<SelectChoice_2<D, F> >) object;
 					CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
-					cl.show (SelectOneOfPanel.this.dialogsPanel, key);
+					cl.show (SelectOneOfPanel.this.dialogsPanel, key.toString ());
 					panel.setData (ok.F1.field);
 					SelectOneOfPanel.this.data.setValue (ok.F1.data);
 					SelectOneOfPanel.this.selectedInlinePanel = panel;
@@ -165,7 +166,7 @@ final class SelectOneOfPanel<D, F>
 				else if (object instanceof SetResult_1.Error_1) {
 					SelectOneOfPanel.this.buttonGroup.clearSelection ();
 					CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
-					cl.show (SelectOneOfPanel.this.dialogsPanel, EMPTY);
+					cl.show (SelectOneOfPanel.this.dialogsPanel, KeyGenerator.EMPTY.toString ());
 					SelectOneOfPanel.this.selectedInlinePanel = null;
 				}
 			}
@@ -203,18 +204,18 @@ final class SelectOneOfPanel<D, F>
 			CardLayout cl = (CardLayout) (this.dialogsPanel.getLayout ());
 			if (bpi.panel != null) {
 				bpi.panel.setData (yes.F1.F2);
-				cl.show (this.dialogsPanel, bpi.key);
+				cl.show (this.dialogsPanel, bpi.key.toString ());
 				this.selectedInlinePanel = bpi.panel;
 			}
 			else {
-				cl.show (this.dialogsPanel, EMPTY);
+				cl.show (this.dialogsPanel, KeyGenerator.EMPTY.toString ());
 				this.selectedInlinePanel = null;
 			}
 		}
 		else {
 			this.buttonGroup.clearSelection ();
 			CardLayout cl = (CardLayout) (SelectOneOfPanel.this.dialogsPanel.getLayout ());
-			cl.show (SelectOneOfPanel.this.dialogsPanel, EMPTY);
+			cl.show (SelectOneOfPanel.this.dialogsPanel, KeyGenerator.EMPTY.toString ());
 				this.selectedInlinePanel = null;
 		}
 	}
