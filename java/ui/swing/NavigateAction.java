@@ -6,6 +6,8 @@
  */
 package ui.swing;
 
+import ui.Key;
+
 /**
  * The action that is performed when the user clicks the {@code UIFrame} ok
  * button. This class defines an abstract method that is called when the user
@@ -21,7 +23,7 @@ package ui.swing;
  * user entered and shows the previous panel. If this was the toppest
  * {@code UIPanel} an empty label is shown in {@code UIFrame}.
  * 
-* @author <a href="mailto:mariano.pedro@gmail.com">Pedro Mariano</a>
+ * @author <a href="mailto:mariano.pedro@gmail.com">Pedro Mariano</a>
  *
  * @version 1.0 19 de Dezembro de 2013
  */
@@ -30,13 +32,13 @@ abstract class NavigateAction
 	/**
 	 * The panel to show after the data has been sucessfully edited.
 	 */
-	final String key;
+	final Key key;
 	/**
 	 * Construct a navigate action with the given key.
 	 * 
 	 * @param key The panel key that should be shown after the data has been sucessfully commited.
 	 */
-	NavigateAction (String key)
+	NavigateAction (Key key)
 	{
 		this.key = key;
 	}
