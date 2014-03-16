@@ -66,24 +66,19 @@ final public class AnyTypeFieldListEditor<D, F>
 		initComponents ();
 	}
 	
-	void setCellRendererEditor (FieldListCellRendererPanel<F> cellRenderer, FieldListCellEditorPanel<D, F> cellEditor)
+	void setCellRendererEditor (FieldListCellRendererEditorPanel<D, F> cellRendererEditor)
 	{
-		cellEditor.validate ();
-		cellRenderer.validate ();
+		cellRendererEditor.validate ();
 		int rowHeight =
 			16 +
 			Math.max (
-				cellRenderer.getSize ().height,
-			Math.max (
-				cellRenderer.getPreferredSize ().height,
-			Math.max (
-				cellEditor.getPreferredSize ().height,
-				cellEditor.getSize ().height)));
+				cellRendererEditor.getSize ().height,
+				cellRendererEditor.getPreferredSize ().height
+			);
 		this.fieldList_table.setRowHeight (rowHeight);
 		this.fieldList_table.getTableHeader ().setVisible (false);
-		this.fieldList_table.setDefaultRenderer (Object.class, cellRenderer);
-		this.fieldList_table.setDefaultEditor (Object.class, cellEditor);
-//		this.fieldList_table.setPreferredSize (new Dimension (this.fieldList_table.getPreferredSize ().width, (int) (1.5 * rowHeight)));
+		this.fieldList_table.setDefaultRenderer (Object.class, cellRendererEditor);
+		this.fieldList_table.setDefaultEditor (Object.class, cellRendererEditor);
 		this.validate ();
 		this.repaint ();
 	}

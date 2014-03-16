@@ -148,15 +148,15 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		this.addDynamicComponent (result);
 		return result;
 	}
-	public FieldListCellRendererPanel newFieldListCellRendererPanel ()
+//	public FieldListCellRendererPanel newFieldListCellRendererPanel ()
+//	{
+//		FieldListCellRendererPanel result = new FieldListCellRendererPanel (this.frame, this.getUIPanel ());
+//		return result;
+//	}
+	public <D1, F1> FieldListCellRendererEditorPanel<D1, F1> newFieldListCellRendererEditorPanel (AnyTypeFieldListEditor<D1, F1> listEditor, Object[] setFieldListElement)
 	{
-		FieldListCellRendererPanel result = new FieldListCellRendererPanel (this.frame, this.getUIPanel ());
-		return result;
-	}
-	public <D1, F1> FieldListCellEditorPanel<D1, F1> newFieldListCellEditorPanel (AnyTypeFieldListEditor<D1, F1> listEditor, Object[] setFieldListElement)
-	{
-		FieldListCellEditorPanel<D1, F1> result
-			= new FieldListCellEditorPanel<> (
+		FieldListCellRendererEditorPanel<D1, F1> result
+			= new FieldListCellRendererEditorPanel<> (
 				this.frame,
 				this.getUIPanel (),
 				setFieldListElement,
@@ -533,22 +533,11 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	 */
 	public <F> P handle_editListFieldAny (JButton button, final Object[] getFunc, final Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
 		final AnyTypeFieldListEditor<D, F> listEditor,
-		FieldListCellRendererPanel<F> cellRenderer,
-		FieldListCellEditorPanel<D, F> cellEditor,
+		FieldListCellRendererEditorPanel<D, F> cellRendererEditor,
 		F defaultValue)
 	{
-//		final AnyTypeFieldListEditor<D, F> listEditor =
-//			this.frame.newAnyTypeFieldListEditor (
-//				button.getText (),
-//				getFunc,
-//				setFunc,
-//				listSizeFunc,
-//				listElementFunc,
-//				cellRenderer,
-//				cellEditor,
-//				defaultValue);
 		this.addDynamicComponent (button);
-		listEditor.setCellRendererEditor (cellRenderer, cellEditor);
+		listEditor.setCellRendererEditor (cellRendererEditor);
 		NavigateActionListener nal = new NavigateActionListener (this.getKey ())
 		{
 			GetFieldFunc<D, List_1<F>> getFieldFunc = new GetFieldFunc<> (getFunc);
