@@ -19,6 +19,7 @@
 
 :- interface.
 
+:- include_module util.
 :- import_module bool, io, list, maybe.
 
 /**
