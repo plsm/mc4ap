@@ -1,0 +1,19 @@
+
+MMC = mmc
+
+MFLAGS_COMMON = \
+--make \
+--output-compile-error-lines 500 \
+--max-error-line-width 120
+
+PREFIX = @prefix@
+
+all: build
+
+build:
+
+install:
+
+clean:
+	cd mercury ; rm -f *.err *~ ; rm -fr Mercury
+	cd java ; rm -f *~
