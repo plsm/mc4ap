@@ -19,7 +19,7 @@ import ui.Key;
  * 
  * @author Pedro Mariano
  */
-public class FieldListCellRendererPanel<D>
+class FieldListCellRendererPanel<D>
 	extends DynamicDataPanel<FieldListCellRendererPanel<D>, D, DataReference<D> >
 	implements
 		TableCellRenderer
@@ -31,7 +31,7 @@ public class FieldListCellRendererPanel<D>
 	/**
 	 * Creates new form FieldListCellRendererPanel
 	 */
-	FieldListCellRendererPanel (UIFrame frame, UIPanel uipanel)
+	private FieldListCellRendererPanel (UIFrame frame, UIPanel uipanel)
 	{
 		super (new DataReference (frame), frame);
 		this.initComponents ();
@@ -92,7 +92,7 @@ public class FieldListCellRendererPanel<D>
 		return this;
 	}
 
-	@Override
+//	@Override
 	public <F> FieldListCellRendererPanel handle_editListFieldAny (JButton button, final Object[] getFunc, final Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
 		AnyTypeFieldListEditor<D, F> listEditor,
 		FieldListCellRendererPanel<F> cellRenderer,

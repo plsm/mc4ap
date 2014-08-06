@@ -82,38 +82,6 @@ final public class AnyTypeFieldListEditor<D, F>
 		this.validate ();
 		this.repaint ();
 	}
-	
-//	/**
-//	 * Creates new form AnyTypeFieldListEditor
-//	 */
-//	AnyTypeFieldListEditor (String fieldName, AbstractMercuryReference<D> data, UIFrame frame, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc,
-//			FieldListCellRendererPanel<F> cellRenderer, 
-//			FieldListCellEditorPanel<D, F> cellEditor, F defaultValue)
-//	{
-//		super (data, frame, getFunc, setFunc, listSizeFunc, listElementFunc);
-//		this.fieldName = fieldName;
-//		this.defaultValue = defaultValue;
-//		this.fieldList_tableModel = new FieldList_TableModel ();
-//		this.key = null;
-//		initComponents ();
-//		cellEditor.validate ();
-//		cellRenderer.validate ();
-//		int rowHeight =
-//			16 +
-//			Math.max (
-//				cellRenderer.getSize ().height,
-//			Math.max (
-//				cellRenderer.getPreferredSize ().height,
-//			Math.max (
-//				cellEditor.getPreferredSize ().height,
-//				cellEditor.getSize ().height)));
-//		this.fieldList_table.setRowHeight (rowHeight);
-//		this.fieldList_table.getTableHeader ().setVisible (false);
-//		this.fieldList_table.setDefaultRenderer (Object.class, cellRenderer);
-//		this.fieldList_table.setDefaultEditor (Object.class, cellEditor);
-//		this.fieldList_table.setPreferredSize (new Dimension (this.fieldList_table.getPreferredSize ().width, (int) (1.5 * rowHeight)));
-//		cellEditor.supData = this;
-//	}
 
 	void setValue (D value)
 	{

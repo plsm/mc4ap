@@ -30,7 +30,7 @@ import ui.KeyGenerator;
  * 
  * @author Pedro Mariano
  */
-public class FieldListCellEditorPanel<D, F>
+class FieldListCellEditorPanel<D, F>
 	extends DynamicDataPanel<FieldListCellEditorPanel<D, F>, F, DataReference<F> >
 	implements
 		TableCellEditor
@@ -57,7 +57,7 @@ public class FieldListCellEditorPanel<D, F>
 	/**
 	 * Creates new form FieldListCellRendererPanel
 	 */
-	FieldListCellEditorPanel (UIFrame frame, UIPanel uipanel, Object[] setFieldListElement, AnyTypeFieldListEditor<D, F> supData)
+	private FieldListCellEditorPanel (UIFrame frame, UIPanel uipanel, Object[] setFieldListElement, AnyTypeFieldListEditor<D, F> supData)
 	{
 		super (new DataReference<F> (frame), frame);
 		this.initComponents ();
