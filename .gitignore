@@ -1,6 +1,3 @@
-# java compilation
-build/*
-
 # mercury files
 mercury/Mercury
 mercury/*.err
@@ -10,7 +7,11 @@ mercury/*.mh
 mercury/*~
 *~
 
-# files created by autoconf
+# files created by autoconf and generated configure script and during compilation and instalation
 autom4te.cache/*
 configure
 Makefile
+config.log
+config.status
+mercury/ui_swing.jar
+manifest.mf

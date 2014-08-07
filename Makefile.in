@@ -58,7 +58,6 @@ install-strip:
 clean:
 	cd mercury ; rm -f *.err *~ ; rm -fr Mercury
 	cd java ; rm -f *~
-	rm -fr build
 	rm -f manifest.mf
 
 distclean: clean
@@ -99,13 +98,11 @@ install-console:
 # rules for the swing version
 
 build-swing:
-	mkdir --parents build ;
-	cd ./mercury/ ; $(MMC) $(MFLAGS_COMMON) --java-classpath ../build/ --grade java --no-libgrade --libgrade java libui_swing
-	cd ./java/ ; $(JAVAC) -classpath @mercury_java@:.:../mercury/Mercury/classs -d ../build $(JAVA_MAIN_CLASSES)
+	cd ./mercury/ ; $(MMC) $(MFLAGS_COMMON) --java-flags "-sourcepath ../java" --grade java --no-libgrade --libgrade java libui_swing
 
 install-swing: manifest.mf
-	cd ./mercury/ ; $(MMC) $(MFLAGS_COMMON) --install-prefix $(PREFIX) --java-classpath ../build/ --grade java --no-libgrade --libgrade java libui_swing.install
-	cd ./build/ ; $(JAR) umf ../manifest.mf $(PREFIX)/lib/mercury/lib/java/ui_swing.jar $$(find . -name '*.class')
+	cd ./mercury/ ; $(MMC) $(MFLAGS_COMMON) --install-prefix $(PREFIX) --grade java --no-libgrade --libgrade java libui_swing.install
+	cd ./mercury/Mercury/classs/ ; $(JAR) umf ../../../manifest.mf $(PREFIX)/lib/mercury/lib/java/ui_swing.jar $$(find ui data -name '*.class')
 
 manifest.mf:
 	@echo "Extension-Name: mc4ap"                        > manifest.mf
