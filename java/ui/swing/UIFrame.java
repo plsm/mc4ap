@@ -37,7 +37,9 @@ final public class UIFrame<D>
 	 */
 	final private String title;
 	/**
-	 * Actions to perform when the user presses the ok button.  If the action result is ok, we remove it from this list and show the next panel or label {@code emptyLabel}.
+	 * Actions to perform when the user presses the ok button.  If the
+	 * action result is ok, we remove it from this list and show the next
+	 * panel or label {@code emptyLabel}.
 	 */
 	final private List<NavigateAction> navigateActions;
 	/**

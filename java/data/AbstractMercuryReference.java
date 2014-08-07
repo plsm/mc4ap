@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package data;
 
 import data.closure.SetFieldFunc;
@@ -9,6 +5,8 @@ import data.closure.GetFieldFunc;
 import jmercury.userInterface.SetResult_1;
 
 /**
+ * Common behaviour of references to record-type values.  This class
+ * provides methods to set and get fields of the record.
  *
  * @author pedro
  */
@@ -39,7 +37,10 @@ abstract public class AbstractMercuryReference<D>
 		return handle_setResult (setFunc.apply (this.getValue (), field));
 	}
 	/**
-	 * Handle a value of type {@code setResult(D)}.  If the value is ok {@code ok(X)} we update the data value this panel references to.  Otherwise, if the value is {@code error(M)} we show the message in the frame notification area.
+	 * Handle a value of type {@code setResult(D)}.  If the value is ok
+	 * {@code ok(X)} we update the data value this panel references to.
+	 * Otherwise, if the value is {@code error(M)} we show the message in
+	 * the frame notification area.
 	 * 
 	 * @param mdata
 	 * 

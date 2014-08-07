@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package data.closure;
 
 import jmercury.maybe.Maybe_1;
@@ -9,11 +5,11 @@ import jmercury.userInterface.CurrentChoice_1;
 import jmercury.runtime.MethodPtr2;
 
 /**
- * Encapsultes the {@code func(D)=maybe(currentChoice(int,F))} closure which
- * returns the current selected choice. This function is used in constructor
- * {@code selectOneOf}. If is a function that given a data returns the current
- * selected choice index and the field value that should be presented to the
- * user.
+ * Encapsultes the {@code func(D)=maybe(currentChoice(int,F))} closure
+ * which returns the current selected choice. This function is used in
+ * constructor {@code selectOneOf}. If is a function that given a data
+ * returns the current selected choice index and the field value that
+ * should be presented to the user.
  *
  * @author pedro
  */

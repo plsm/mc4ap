@@ -1,13 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package data.closure;
 
 import jmercury.runtime.MethodPtr2;
 
 /**
- * Encapsulates mercury type {@code func(D)=D}.  This function is used to set a field of some data.  The result may be a valid data, or if the field value is invalid data, a string is returned.
+ * Encapsulates mercury type {@code func(D)=D}.  This function is used to
+ * set a field of some data.  The result may be a valid data, or if the
+ * field value is invalid data, a string is returned.
  * 
  * @author pedro
  */

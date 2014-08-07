@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package data.closure;
 
 import jmercury.runtime.MethodPtr3;
@@ -9,7 +5,7 @@ import jmercury.userInterface.SetResult_1;
 
 /**
  * Encapsultes the {@code func(D,int)=setResult(D)} closure which sets a data
- * choice. This function is used in constructor {@code selectOneOf/3}. If is a
+ * choice. This function is used in constructor {@code selectOneOf/3}. It is a
  * function that given a data and a choice index returns the next data that
  * should be presented to the user.
  *

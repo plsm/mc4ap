@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package data;
 
 import data.closure.GetFieldFunc;
@@ -9,20 +5,25 @@ import data.closure.SetFieldFunc;
 import jmercury.userInterface;
 
 /**
+ * Represents a reference to a field of some record-type value.
  *
  * @author pedro
  */
 final public class FieldReference<D, F>
 	extends AbstractMercuryReference<F>
 {
+	/**
+	 * The record-type value.
+	 */
 	final public AbstractMercuryReference<D> parent;
 	
 	/**
-	 * The get function used to get the field of {@code parent}.
+	 * The get function used to get a field of {@code parent}.
 	 */
 	final private GetFieldFunc<D, F> getFieldFunc;
 	/**
-	 * The set function used to update the field of {@code parent}. The set function returns an instance of {@code maybe_error(T)}.
+	 * The set function used to update the field of {@code parent}. The set
+	 * function returns an instance of {@code maybe_error(T)}.
 	 */
 	final private SetFieldFunc<D, F> setFieldMFunc;
 		
@@ -34,7 +35,11 @@ final public class FieldReference<D, F>
 	}
 
 	/**
-	 * Updates a field of {@code data} with the given value.  The set function returns an instance of {@code maybe_error(T)}.  If constructor {@code error(string)} is returned, we show the message in the notification area and disable the ok button.
+	 * Updates a field of {@code data} with the given value.  The set
+	 * function returns an instance of {@code maybe_error(T)}.  If
+	 * constructor {@code error(string)} is returned, we show the message in
+	 * the notification area and disable the ok button.
+	 *
 	 * @return {@code true} if there was no error.
 	 */
 	@Override

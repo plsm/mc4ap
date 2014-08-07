@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package data.closure;
 
 import jmercury.runtime.MethodPtr3;
@@ -10,9 +6,10 @@ import jmercury.userInterface.SelectChoice_2;
 
 /**
  * Encapsultes the {@code func(D,int)=setResult(selectChoice(D,F))} closure
- * which sets a choice. This function is used in constructor
- * {@code selectOneOf}. If is a function that given a data and a choice index
- * returns the next data and field value that should be presented to the user.
+ * which sets a choice. This function is used in constructor {@code
+ * selectOneOf}. If is a function that given a data and a choice index
+ * returns the next data and field value that should be presented to the
+ * user.
  *
  * @author pedro
  */

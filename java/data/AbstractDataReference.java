@@ -4,7 +4,8 @@ package data;
 /**
  * Holds the current value of the data shown in some component.
  * 
- * <p> This class allows different components to access the most recent value of some data.
+ * <p> This class allows different components to access the most recent
+ * value of some data.
  * 
  * @author Pedro Mariano
  */

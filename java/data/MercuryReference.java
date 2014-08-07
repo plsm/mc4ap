@@ -4,7 +4,10 @@ import data.closure.SetFieldFunc;
 import data.closure.GetFieldFunc;
 
 /**
- * Represents a reference to a mercury value.  Implementors of this interface can use an instance of the class to share a reference between diferent GUI components.
+ * Represents a reference to a mercury value.  Implementors of this
+ * interface can use an instance of the class to share a reference between
+ * diferent GUI components.
+ *
  * @author pedro
  */
 public interface MercuryReference<D>
@@ -26,7 +29,8 @@ public interface MercuryReference<D>
 	/**
 	 * Get the value of some field of this data.
 	 *
-	 * @param getFunc the get function used to obtain a field value of the data.
+	 * @param getFunc the get function used to obtain a field value of the
+	 * data.
 	 *
 	 * @return the value of a field of this data.
 	 */
