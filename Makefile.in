@@ -23,7 +23,7 @@ JAVA_MAIN_CLASSES = \
 ./ui/swing/UIPanel.java
 
 ################################################################################
-# STANDARD GNU RULES
+# STANDARD GNU TARGETS
 
 .PHONY: all
 all: build
@@ -52,15 +52,19 @@ uninstall:
 
 install-strip:
 
-# clean rules
+# clean targets
 
 .PHONY: clean
 clean:
-	cd mercury ; rm -f *.err *~ ; rm -fr Mercury
+	cd mercury ; rm -f *.err *~ *.mh ; rm -fr Mercury
 	cd java ; rm -f *~
 	rm -f manifest.mf
 
 distclean: clean
+	rm -fr ./autom4te.cache/
+	rm -f ./config.log ./config.status
+	rm -f ./configure ./Makefile
+	rm -f ./mercury/ui_swing.jar
 
 mostlyclean: clean
 
@@ -71,7 +75,7 @@ maintainer-clean:
 
 TAGS:
 
-# documentation rules
+# documentation targets
 
 info:
 
@@ -85,9 +89,9 @@ dist:
 check:
 
 ################################################################################
-# SPECIFIC RULES
+# SPECIFIC TARGETS
 
-# rules for the console version
+# targets for the console version
 
 build-console:
 	cd ./mercury/ ; $(MMC) $(MFLAGS_COMMON) libui_console
@@ -95,7 +99,7 @@ build-console:
 install-console:
 	cd ./mercury/ ; $(MMC) $(MFLAGS_COMMON) --install-prefix $(PREFIX) libui_console.install
 
-# rules for the swing version
+# targets for the swing version
 
 build-swing:
 	cd ./mercury/ ; $(MMC) $(MFLAGS_COMMON) --java-flags "-sourcepath ../java" --grade java --no-libgrade --libgrade java libui_swing

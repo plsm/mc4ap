@@ -10,9 +10,7 @@ AC_CONFIG_FILES(Makefile)
 # check for mercury
 AC_PATH_PROG(MMC,mmc,notFound)
 if test "$MMC" = notFound ; then
-	use_console=no
-	use_swing=no
-	echo "Mercury compiler is required!"
+	AC_MSG_ERROR(["Mercury compiler is required!"])
 else
 	use_console=yes
 ############################################################
