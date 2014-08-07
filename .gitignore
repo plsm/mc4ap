@@ -1,7 +1,16 @@
-Makefile
+# java compilation
+build/*
+
+# mercury files
 mercury/Mercury
 mercury/*.err
 mercury/*.mh
+
+# backup files
 mercury/*~
-configure
 *~
+
+# files created by autoconf
+autom4te.cache/*
+configure
+Makefile
