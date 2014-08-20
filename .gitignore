@@ -9,7 +9,6 @@ mercury/*~
 
 # files created by autoconf and generated configure script and during compilation and instalation
 autom4te.cache/*
-configure
 Makefile
 config.log
 config.status
