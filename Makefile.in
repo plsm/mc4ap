@@ -22,6 +22,10 @@ JAVA_MAIN_CLASSES = \
 ./ui/swing/UIFrame.java \
 ./ui/swing/UIPanel.java
 
+MODULES = ui_console ui_swing userInterface userInterface.util
+
+MODULES_OTHER_GRADES = ui_console userInterface userInterface.util
+
 ################################################################################
 # STANDARD GNU TARGETS
 
@@ -48,6 +52,14 @@ install-pdf:
 install-ps:
 
 uninstall:
+	for MODULE in $(MODULES) ; do for EXT in int int2 int3 mh mih module_dep ; do rm -v @prefix@/lib/mercury/ints/$$MODULE.$$EXT ; done ; done
+	for MODULE in $(MODULES_OTHER_GRADES) ; do rm -v @prefix@/lib/mercury/inc/$$MODULE.mh ; done
+	rm -v \
+		@prefix@/lib/mercury/lib/*/libui_console.a           \
+		@prefix@/lib/mercury/lib/*/libui_console.so          \
+		@prefix@/lib/mercury/lib/java/ui_console.jar         \
+		@prefix@/lib/mercury/lib/java/ui_swing.jar           \
+		@prefix@/lib/mercury/modules/*/ui_console.init
 
 
 install-strip:
