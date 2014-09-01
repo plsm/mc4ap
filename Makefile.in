@@ -114,7 +114,7 @@ install-console:
 # targets for the swing version
 
 build-swing:
-	cd ./mercury/ ; $(MMC) $(MFLAGS_COMMON) --java-flags "-sourcepath ../java" --grade java --no-libgrade --libgrade java libui_swing
+	cd ./mercury/ ; $(MMC) $(MFLAGS_COMMON) --java-flags "-sourcepath ../java:Mercury/javas" --grade java --no-libgrade --libgrade java libui_swing
 
 install-swing: manifest.mf
 	cd ./mercury/ ; $(MMC) $(MFLAGS_COMMON) --install-prefix $(PREFIX) --grade java --no-libgrade --libgrade java libui_swing.install

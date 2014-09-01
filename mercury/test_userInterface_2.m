@@ -15,8 +15,9 @@
 
 :- implementation.
 
-:- import_module ui_console, ui_swing, userInterface.
-%:- import_module my, my.random.
+:- import_module userInterface.
+:- import_module ui_console.
+%:- import_module ui_swing.
 :- import_module bool, exception, float, int, list, maybe, string.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,14 +81,14 @@ main(!IO) :-
 	writeData(Result1, !IO),
 
 	
-	ui_swing.show("Test user_interface module", mainMenu, InitialData, Result2, !IO),
-	io.print(Result2, !IO),
-	io.nl(!IO),
+	% ui_swing.show("Test user_interface module", mainMenu, InitialData, Result2, !IO),
+	% io.print(Result2, !IO),
+	% io.nl(!IO),
 
-	io.print(if Result1 = Result2 then yes else no, !IO),
-	io.nl(!IO),
+	% io.print(if Result1 = Result2 then yes else no, !IO),
+	% io.nl(!IO),
 
-	writeData(Result2, !IO),
+	% writeData(Result2, !IO),
 	true.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

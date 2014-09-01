@@ -269,26 +269,32 @@ handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO
 	printList(nothing, ListStrings, nextNavigation(Navigation, DialogInterfaceData), !IO),
 	askActionUser(list.length(ListStrings), SelectedAction, !IO),
 	(if
-		SelectedAction > 0,
-		FuncSelectChoice(!.Data, SelectedAction - 1) = SelectChoice
+		SelectedAction = 0
 	then
-		SelectChoice = error(Msg),
-		io.print(Msg, !IO),
-		io.nl(!IO),
-		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)
+		true
+	else if
+		SelectedAction > 0
+	then
+		FuncSelectChoice(!.Data, SelectedAction - 1) = SelectChoice,
+		(	%
+			SelectChoice = error(Msg),
+			io.print(Msg, !IO),
+			io.nl(!IO)
 		;
-		SelectChoice = ok(sc(NextData, Field)),
-		list.det_split_list(SelectedAction - 1, ListChoices, _Start, End),
-		ChoiceItem = list.det_head(End),
-		ChoiceItem = ci(ValueInterfaceData, Dialog),
-		(
-			Dialog = [],
-			!:Data = NextData
+			SelectChoice = ok(sc(NextData, Field)),
+			list.det_split_list(SelectedAction - 1, ListChoices, _Start, End),
+			ChoiceItem = list.det_head(End),
+			ChoiceItem = ci(ValueInterfaceData, Dialog),
+			(	%
+				Dialog = [],
+				!:Data = NextData
 			;
-			Dialog = [_|_],
-			showDialog(Dialog, nextNavigation(nextNavigation(Navigation, DialogInterfaceData), ValueInterfaceData), Field, NextField, !IO),
-			handleResult(FuncSetData(NextData, NextField), NextData, !:Data, !IO)
-		)
+				Dialog = [_|_],
+				showDialog(Dialog, nextNavigation(nextNavigation(Navigation, DialogInterfaceData), ValueInterfaceData), Field, NextField, !IO),
+				handleResult(FuncSetData(NextData, NextField), NextData, !:Data, !IO)
+			)
+		),
+		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)
 	else
 		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)
 	)
@@ -316,25 +322,27 @@ handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO
 	then
 		true
 	else if
-		SelectedAction > 0,
-		FuncSelectChoice(!.Data, SelectedAction - 1) = SelectChoice
+		SelectedAction > 0
 	then
-		SelectChoice = error(Msg),
-		io.print(Msg, !IO),
-		io.nl(!IO),
-		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)
+		FuncSelectChoice(!.Data, SelectedAction - 1) = SelectChoice,
+		(	%
+			SelectChoice = error(Msg),
+			io.print(Msg, !IO),
+			io.nl(!IO)
 		;
-		SelectChoice = ok(NextData),
-		list.det_split_list(SelectedAction - 1, ListChoices, _Start, End),
-		ChoiceItem = list.det_head(End),
-		ChoiceItem = ci(ValueInterfaceData, Dialog),
-		(
-			Dialog = [],
-			!:Data = NextData
+			SelectChoice = ok(NextData),
+			list.det_split_list(SelectedAction - 1, ListChoices, _Start, End),
+			ChoiceItem = list.det_head(End),
+			ChoiceItem = ci(ValueInterfaceData, Dialog),
+			(	%
+				Dialog = [],
+				!:Data = NextData
 			;
-			Dialog = [_|_],
-			showDialog(Dialog, nextNavigation(nextNavigation(Navigation, DialogInterfaceData), ValueInterfaceData), NextData, !:Data, !IO)
-		)
+				Dialog = [_|_],
+				showDialog(Dialog, nextNavigation(nextNavigation(Navigation, DialogInterfaceData), ValueInterfaceData), NextData, !:Data, !IO)
+			)
+		),
+		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)
 	else
 		handleDialogAction(Navigation, di(DialogInterfaceData, DialogAction), !Data, !IO)
 	)
