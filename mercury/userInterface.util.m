@@ -85,7 +85,7 @@ makeSelectOneOf(GetFunc, SetFunc, ListInterfaceData, ListFieldValues) = Result :
 		(if
 			list.nth_member_search(ListFieldValues, Value, Position)
 		then
-			R = yes(Position)
+			R = yes(Position - 1)
 		else
 			R = no
 		)
