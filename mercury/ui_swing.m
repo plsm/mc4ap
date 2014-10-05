@@ -483,7 +483,7 @@ trace_buildDialogForm(Flat, DialogItem, !Frame, !Panel) :-
 		;
 		DialogItem = di(InterfaceData)
 	),
-	trace [io(!IO)] (io.print(InterfaceData, !IO), io.nl(!IO)),
+%	trace [io(!IO)] (io.print(InterfaceData, !IO), io.nl(!IO)),
 	buildDialogForm(Flat, DialogItem, !Frame, !Panel).
 
 /**
