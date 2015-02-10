@@ -18,14 +18,19 @@ abstract public class AbstractDataReference<D>
 	 * The current value of the data.
 	 */
 	D value;
+	/**
+	 * Return the current value of the data.
+	 *
+	 * @return the current value of the data
+	 */
 	@Override
 	final public D getValue ()
 	{
 		return this.value;
 	}
 	/**
-	 * 
-	 * @param newValue
+	 * Set the value of the data.
+	 * @param newValue the new value of the date.
 	 * @return {@code true} if there was no error.
 	 */
 	@Override

@@ -18,9 +18,9 @@ import jmercury.userInterface;
  * <p> This panel is part of some frame that has an ok button to accept the new
  * data and a notification area to present message when a data update fails.
  *
- * @param D The mercury data type that is represented by this panel.
+ * @param <D> The mercury data type that is represented by this panel.
  *
- * @parma R The reference to a mercury value that is represented by this panel.
+ * @param <R> The reference to a mercury value that is represented by this panel.
  *
  * @author Pedro Mariano
  */

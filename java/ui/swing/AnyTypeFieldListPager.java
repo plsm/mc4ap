@@ -3,20 +3,22 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ui.swing;
 
 import data.AbstractMercuryReference;
 
 /**
+ * Represents a pager where the user can navigate a list of elements. This panel
+ * is used to edit mercury value of type {@code list(F)}.
  *
- * @param <D>
- * @param <F>
+ * @param <D> The type of the data that contains a field list.
+ * @param <F> The type of the elements in the field list.
  * @author Pedro Mariano
  */
 public class AnyTypeFieldListPager<D, F>
 	extends AbstractFieldListEditorPanel<D, F>
 {
+
 	/**
 	 * Component used to edit list elements.
 	 */
@@ -29,16 +31,19 @@ public class AnyTypeFieldListPager<D, F>
 	 * Default value used when adding a new element to the list.
 	 */
 	final private F defaultValue;
+
 	/**
 	 * Creates a new form to edit a list of values.
-	 * @param editor
-	 * @param defaultValue
-	 * @param data
-	 * @param frame
-	 * @param getFunc
-	 * @param setFunc
-	 * @param listSizeFunc
-	 * @param listElementFunc 
+	 *
+	 * @param editor The editor of the values in the list.
+	 * @param defaultValue A default value used when inserting new elements in
+	 * the list.
+	 * @param data The data that contains a field list.
+	 * @param frame The frame where this panel is contained.
+	 * @param getFunc The function to get the field list.
+	 * @param setFunc The function to set the field list.
+	 * @param listSizeFunc The function to obtain the field list size.
+	 * @param listElementFunc The function to obtain an element at a given index.
 	 */
 	public AnyTypeFieldListPager (FieldListCellRendererEditorPanel<D, F> editor, F defaultValue, AbstractMercuryReference<D> data, UIFrame frame, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc)
 	{
@@ -49,9 +54,13 @@ public class AnyTypeFieldListPager<D, F>
 		this.add (editor, java.awt.BorderLayout.CENTER);
 		this.index = 0;
 		this.updateInfo ();
-		
+
 	}
 
+	/**
+	 * Updates the swing components at initialisation time and after the user has
+	 * pressed one of the buttons.
+	 */
 	private void updateInfo ()
 	{
 		int size = this.applyListSizeFunc ();
@@ -64,7 +73,7 @@ public class AnyTypeFieldListPager<D, F>
 			this.editor.setData (this.applyListElementFunc (this.index));
 		}
 	}
-	
+
 	/**
 	 * This method is called from within the constructor to initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is always
@@ -181,7 +190,7 @@ public class AnyTypeFieldListPager<D, F>
 
    private void insertButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_insertButtonActionPerformed
    {//GEN-HEADEREND:event_insertButtonActionPerformed
-      jmercury.list.List_1<F> previousList = this.data.getValue ();
+		jmercury.list.List_1<F> previousList = this.data.getValue ();
 		jmercury.list.List_1<F> nextList = new jmercury.list.List_1.F_cons_2<> (this.defaultValue, previousList);
 		this.data.setValue (nextList);
 		index = 0;
@@ -190,7 +199,7 @@ public class AnyTypeFieldListPager<D, F>
 
    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_deleteButtonActionPerformed
    {//GEN-HEADEREND:event_deleteButtonActionPerformed
-		this.deleteElements (new int[] {this.index});
+		this.deleteElements (new int[]{this.index});
 		if (index > 0) {
 			index--;
 		}
@@ -199,7 +208,7 @@ public class AnyTypeFieldListPager<D, F>
 
    private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_duplicateButtonActionPerformed
    {//GEN-HEADEREND:event_duplicateButtonActionPerformed
-      F o = this.applyListElementFunc (index);
+		F o = this.applyListElementFunc (index);
 		jmercury.list.List_1<F> previousList = this.data.getValue ();
 		jmercury.list.List_1<F> nextList = new jmercury.list.List_1.F_cons_2<> (o, previousList);
 		this.data.setValue (nextList);

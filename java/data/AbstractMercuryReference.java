@@ -60,7 +60,7 @@ abstract public class AbstractMercuryReference<D>
 	 * Otherwise, if the value is {@code error(M)} we show the message in
 	 * the frame notification area.
 	 * 
-	 * @param mdata
+	 * @param mdata Value to handle.
 	 * 
 	 * @return True if there was no error.
 	 */

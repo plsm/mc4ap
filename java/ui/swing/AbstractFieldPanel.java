@@ -9,19 +9,21 @@ import data.FieldReference;
  * display and edit a field of any type be it primitive or user
  * defined.
  *
+ * @param <D> The type of the data.
+ *
+ * @param <F> The type of the field data which is shown by this panel.
+ *
  * @author  Pedro Mariano
- * @param <D>
- * @param <F>
  */
 abstract public class AbstractFieldPanel<D, F>
 	extends AbstractDataPanel<F, FieldReference<D, F> >
 {
 	/**
 	 * Creates new form FieldListEditorPanel
-	 * @param data
-	 * @param frame
-	 * @param getFunc
-	 * @param setFunc
+	 * @param data The data whose field is going to be shown by the panel.
+	 * @param frame The frame where this panel is located.
+	 * @param getFunc The function to get the field data.
+	 * @param setFunc The function to set the field data.
 	 */
 	protected AbstractFieldPanel (AbstractMercuryReference<D> data, UIFrame frame, Object[] getFunc, Object[] setFunc)
 	{

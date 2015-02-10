@@ -99,7 +99,8 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	 * {@code UIPanel} Mercury data can be placed. Inline panels are bordered
 	 * panels that visually group swing components.
 	 *
-	 * @return 
+	 * @param panelName The name of the inline panel.
+	 * @return The created panel.
 	 */
 	public InlinePanelField<D, D> newInlinePanelForData (String panelName)
 	{
@@ -118,6 +119,10 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	 * {@code UIPanel} Mercury data can be placed. Inline panels are bordered
 	 * panels that visually group swing components.
 	 *
+	 * @param <F> The type of the field.
+	 * @param panelName The name of the panel.
+	 * @param getFieldFunc The function to get the field.
+	 * @param setFieldFunc The function to set the field.
 	 * @return 
 	 */
 	public <F> InlinePanelField<D, F> newInlinePanelForFieldData (String panelName, Object[] getFieldFunc, Object[] setFieldFunc)
@@ -133,6 +138,14 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 		//System.out.println ("newInlinePanelForFieldData (" + panelName + ", ...)");
 		return result;
 	}
+	/**
+	 * Construct an inline panel to select choices for some field data.
+	 * @param <F> The type of the field data.
+	 * @param panelName The border title.
+	 * @param funcSelectedChoice The function that selects a choice given an index.
+	 * @param funcSetData
+	 * @return 
+	 */
 	public <F> SelectOneOfPanel<D, F> newSelectOneOfFieldPanel (String panelName, Object[] funcSelectedChoice, Object[] funcSetData)
 	{
 		SelectOneOfPanel<D, F> result = new SelectOneOfPanel<> (this.data, this.frame, this.getUIPanel (), panelName, funcSelectedChoice, funcSetData);

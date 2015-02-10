@@ -43,38 +43,14 @@ abstract class AbstractFieldListEditorPanel<D, F>
 	protected AbstractFieldListEditorPanel (AbstractMercuryReference<D> data, UIFrame frame, Object[] getFunc, Object[] setFunc, Object[] listSizeFunc, Object[] listElementFunc)
 	{
 		super (data, frame, getFunc, setFunc);
-//		this.getFieldListFunc = getFunc;
-//		this.setFieldListFunc = setFunc;
 		this.listSizeFunc = listSizeFunc;
 		this.listElementFunc = listElementFunc;
 		initComponents ();
 	}
-//	/**
-//	 * Get the field list value represented by this {@code
-//	 * AbstractFieldListEditorPanel}.
-//	 * 
-//	 * @return the field list represented by this {@code AbstractFieldListEditorPanel}.
-//	 */
-//	protected jmercury.list.List_1<T> applyGetFunc ()
-//	{
-//		return (jmercury.list.List_1<T>) super.applyGetFunc (this.getFieldListFunc);
-//	}
-//	/**
-//	 * Set the field list to the given value.
-//	 * 
-//	 * @param value The new value of the field list represented by this
-//	 * {@code AbstractFieldListEditorPanel}.
-//	 * 
-//	 * @return Whether the new value is valid or not.
-//	 */
-//	protected boolean applySetFunc (jmercury.list.List_1<T> value)
-//	{
-//		return super.applySetFunc (this.setFieldListFunc, value);
-//	}
 	/**
 	 * Get the number of elements in the field list.
-	 * 
-	 * @return 
+	 *
+	 * @return the number of elements in the field list.
 	 */
 	protected int applyListSizeFunc ()
 	{

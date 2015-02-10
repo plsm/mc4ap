@@ -16,7 +16,7 @@ import jmercury.userInterface;
  * @author Pedro Mariano
  */
 final public class FieldReference<D, F>
-		  extends AbstractMercuryReference<F>
+	extends AbstractMercuryReference<F>
 {
 
 	/**
@@ -72,8 +72,12 @@ final public class FieldReference<D, F>
 	}
 
 	/**
+	 * Handles setting a field data. Seting the a field of a data may result in a
+	 * valid data or an error message. In the case of an error message is
+	 * produced it must be shown to the user.
 	 *
-	 * @param mdata
+	 * @param mdata the value to handle.
+	 *
 	 * @return {@code true} if there was no error.
 	 */
 	@Override
@@ -87,13 +91,13 @@ final public class FieldReference<D, F>
 		else if (mdata instanceof userInterface.SetResult_1.Error_1) {
 			userInterface.SetResult_1.Error_1<F> error = (userInterface.SetResult_1.Error_1<F>) mdata;
 			this.parent.
-					  handle_setResult (new userInterface.SetResult_1.Error_1<D> (error.F1));
+				handle_setResult (new userInterface.SetResult_1.Error_1<D> (error.F1));
 			return false;
 		}
 		else {
 			throw new UnsupportedOperationException ("Unsupported SetResult: " + mdata.
-					  getClass ().
-					  getSimpleName ());
+				getClass ().
+				getSimpleName ());
 		}
 	}
 }
