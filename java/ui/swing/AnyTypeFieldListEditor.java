@@ -174,7 +174,9 @@ final public class AnyTypeFieldListEditor<D, F>
 		public Object getValueAt (int rowIndex, int columnIndex)
 		{
 			//System.out.println ("FieldList_TableModel.getValueAt(" + rowIndex + "," + columnIndex + ")");
-			return AnyTypeFieldListEditor.this.applyListElementFunc (rowIndex);
+			Object result = AnyTypeFieldListEditor.this.applyListElementFunc (rowIndex);
+			System.out.println ("getValueAt (" + rowIndex + ", " + columnIndex + ") -> " + result.toString ());
+			return result;
 		}
 
 		@Override

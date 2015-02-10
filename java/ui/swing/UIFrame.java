@@ -426,7 +426,7 @@ final public class UIFrame<D>
    }//GEN-LAST:event_cancelButtonActionPerformed
 
    private void dynamicPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_dynamicPanelComponentResized
-		System.out.println ("New size of dynamic panel: " + this.dynamicPanel.getSize ());
+		//System.out.println ("New size of dynamic panel: " + this.dynamicPanel.getSize ());
    }//GEN-LAST:event_dynamicPanelComponentResized
 
 

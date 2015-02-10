@@ -527,8 +527,8 @@ abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R
 	 * @param setFunc
 	 * @param listSizeFunc
 	 * @param listElementFunc
-	 * @param cellRenderer
-	 * @param cellEditor
+	 * @param listEditor
+	 * @param cellRendererEditor
 	 * @param defaultValue
 	 * @return 
 	 */
