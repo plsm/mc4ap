@@ -3,8 +3,13 @@ package data.closure;
 import jmercury.runtime.MethodPtr2;
 
 /**
+ * Represents a high order function to obtain a field of a record-type value.
  *
- * @author pedro
+ * @param <D> the record whose field is to be obtained.
+ *
+ * @param <F> the field type that is to be otained.
+ *
+ * @author Pedro Mariano
  */
 final public class GetFieldFunc<D, F>
 {
@@ -14,7 +19,8 @@ final public class GetFieldFunc<D, F>
 	final private Object[] getFunc;
 	/**
 	 * Construct a set function wrapper.
-	 * @param setFunc 
+	 *
+	 * @param getFunc The function to get the field of a record-type value.
 	 */
 	public GetFieldFunc (Object[] getFunc)
 	{
@@ -22,7 +28,9 @@ final public class GetFieldFunc<D, F>
 	}
 	/**
 	 * Apply the get function to the given.
+	 *
 	 * @param data The data to get the field.
+	 *
 	 * @return The field value.
 	 */
 	public F apply (D data)

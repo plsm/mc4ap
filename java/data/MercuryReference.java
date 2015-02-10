@@ -8,6 +8,8 @@ import data.closure.GetFieldFunc;
  * interface can use an instance of the class to share a reference between
  * diferent GUI components.
  *
+ * @param <D> the type of the mercury value this interface refers to.
+ *
  * @author pedro
  */
 public interface MercuryReference<D>
@@ -29,8 +31,10 @@ public interface MercuryReference<D>
 	/**
 	 * Get the value of some field of this data.
 	 *
-	 * @param getFunc the get function used to obtain a field value of the
+	 * @param func the get function used to obtain a field value of the
 	 * data.
+	 * 
+	 * @param <F> the type of the returned field.
 	 *
 	 * @return the value of a field of this data.
 	 */
@@ -38,9 +42,13 @@ public interface MercuryReference<D>
 	/**
 	 * Set the value of some field of this data.
 	 * 
-	 * @param setFunc The field set function.
+	 * @param func The field set function.
 	 * 
 	 * @param newFieldValue The new field value.
+	 * 
+	 * @param <F> the type of the returned field.
+	 * 
+	 * @return {@code true} if the there was no error in setting the value.
 	 */
 	<F> boolean applySetFieldFunc (SetFieldFunc<D, F> func, F newFieldValue);
 }

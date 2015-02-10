@@ -7,6 +7,8 @@ package data;
  * <p> This class allows different components to access the most recent
  * value of some data.
  * 
+ * @param <D> the type of the mercury value this interface refers to.
+ *
  * @author Pedro Mariano
  */
 abstract public class AbstractDataReference<D>

@@ -17,7 +17,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import data.MercuryReference;
 import data.AbstractMercuryReference;
@@ -25,17 +24,19 @@ import data.FieldReference;
 import data.closure.GetFieldFunc;
 import data.closure.SetFieldFunc;
 import data.closure.UpdateDataFunc;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.text.ParseException;
 import jmercury.list.List_1;
 import ui.Key;
 
 /**
- * Base class of swing panels that are initialised during runtime by the mercury backend.  The public methods in this class match the constructors of mercury type {@code dialog(D)}.
- * 
- * <p>This panel uses a {@code GridBagLayout}.  Components added by methods {@code handle_XXX} are arranged in <i>n</i> rows by 2 columns.
- * 
+ * Base class of swing panels that are initialised during runtime by the mercury
+ * backend. The public methods in this class match the constructors of mercury
+ * type {@code dialog(D)}.
+ *
+ * <p>This panel uses a {@code GridBagLayout}. Components added by methods
+ * {@code handle_XXX} are arranged in <i>n</i> rows by 2 columns.
+ *
  * @author Pedro Mariano
  */
 abstract public class DynamicDataPanel<P extends DynamicDataPanel<P, D, R>, D, R extends AbstractMercuryReference<D> >

@@ -9,7 +9,9 @@ import jmercury.userInterface.SetResult_1;
  * function that given a data and a choice index returns the next data that
  * should be presented to the user.
  *
- * @author pedro
+ * @param <D> the type of the data choice.
+ *
+ * @author Pedro Mariano
  */
 public class SelectDataChoiceFunc<D>
 {
@@ -22,7 +24,8 @@ public class SelectDataChoiceFunc<D>
 	/**
 	 * Construct a set function wrapper.
 	 *
-	 * @param setFunc
+	 * @param selectedChoiceFunc The function that given a data and a choice
+	 * index returns the next data that should be presented to the user.
 	 */
 	public SelectDataChoiceFunc (Object[] selectedChoiceFunc)
 	{
@@ -33,15 +36,17 @@ public class SelectDataChoiceFunc<D>
 	 * Apply the function to the given data and index.
 	 *
 	 * @param data The data to set.
+	 *
 	 * @param index The data choice index.
+	 *
 	 * @return The selected data choice value.
 	 */
 	public SetResult_1<D> apply (D data, int index)
 	{
 		SetResult_1<D> result;
-		MethodPtr3 funcMeth = ((MethodPtr3) this.selectChoiceFunc [1]);
+		MethodPtr3 funcMeth = ((MethodPtr3) this.selectChoiceFunc[1]);
 		result = (SetResult_1<D>) funcMeth.
-		       call___0_0 (selectChoiceFunc, data, index);
+				  call___0_0 (selectChoiceFunc, data, index);
 		return result;
 	}
 }

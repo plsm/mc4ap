@@ -5,19 +5,13 @@
 
 package ui.swing;
 
-import data.FieldReference;
-import data.closure.GetFieldFunc;
-import data.closure.SetFieldFunc;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import javax.swing.JTable;
 import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
 import data.closure.SetFieldListElementFunc;
