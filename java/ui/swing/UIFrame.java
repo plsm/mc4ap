@@ -12,20 +12,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.UnsupportedLookAndFeelException;
 import ui.Key;
 import ui.KeyGenerator;
 
 /**
- *
+ * Main panel with the tool bar and panels arranged in a card layout.
+ * 
  * @author pedro
  */
 final public class UIFrame<D>
@@ -46,10 +46,6 @@ final public class UIFrame<D>
 	 * Semaphore used to block method {@code showFrame()} until the user closes the window.
 	 */
 	final private Semaphore close;
-//	/**
-//	 * Empty panel key.
-//	 */
-//	static private String EMPTY = "empty";
 	/**
 	 * Key generator used to assign keys to panels inserted in the {@code dynamicPanel}.
 	 */
@@ -57,13 +53,11 @@ final public class UIFrame<D>
 	
 
 	/** Creates new form UIFrame */
-	public UIFrame (String title, D data)
+	private UIFrame (String title, D data)
 	{
 		super (new DataReference (null, data));
-		this.data.frame = this;
 		this.title = title;
-		this.frame = this;
-		this.navigateActions = new LinkedList<NavigateAction> ();
+		this.navigateActions = new LinkedList<> ();
 		this.close = new Semaphore (0);
 		
 		try {
@@ -73,14 +67,33 @@ final public class UIFrame<D>
 					break;
 				}
 			}
-		} catch (Exception e) {
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
 			
 		}
 		initComponents ();
 		this.buttonsPanel.setVisible (false);
 	}
 	/**
-	 * Show this frame and return the data after the frame has been closed.
+	 * Create the main panel with a tool bar and sub panels arranged by a card
+	 * layout.
+	 *
+	 * @param <D> The mercury type of the data that is going to be edited by the
+	 * returned panel.
+	 * @param title The frame title.
+	 * @param data The initial value of the data.
+	 * @return main panel with a tool bar and sub panels arranged by a card
+	 * layout.
+	 */
+	static public <D> UIFrame createFrame (String title, D data)
+	{
+		UIFrame<D> result = new UIFrame<> (title, data);
+		result.data.frame = result;
+		result.frame = result;
+		return result;
+	}
+	/**
+	 * Show a frame with this panel as the content pane and return the data after
+	 * the frame has been closed.
 	 */
 	public Object showFrame ()
 	{
@@ -108,9 +121,12 @@ final public class UIFrame<D>
 		return this.data.getValue ();
 	}
 	/**
-	 * Construct a new {@code UIPanel} that can be used to display and edit the data or a field data managed by this {@code UIFrame}.  The new panel has its own {@code DataReference}.  Only when the user presses the ok button this frame data is updated.
-	 * 
-	 * @return 
+	 * Construct a new {@code UIPanel} that can be used to display and edit the
+	 * data or a field data managed by this {@code UIFrame}. The new panel has
+	 * its own {@code DataReference}. Only when the user presses the ok button
+	 * this frame data is updated.
+	 *
+	 * @return the constructed panel.
 	 */
 	public UIPanel<D> newUIPanel ()
 	{
@@ -119,7 +135,18 @@ final public class UIFrame<D>
 		this.dynamicPanel.add (result, result.key.toString ());
 		return result;
 	}
-	
+	/**
+	 * Construct a new {@code AnyTypeFieldListEditor} component to edit a field of type list.  The component is added to the card layout panel.
+	 * @param <F> The type of the elements in the list.
+	 * @param <SF>
+	 * @param fieldName
+	 * @param getFunc
+	 * @param setFunc
+	 * @param listSizeFunc
+	 * @param listElementFunc
+	 * @param defaultValue
+	 * @return 
+	 */
 	public <F, SF> AnyTypeFieldListEditor<F, SF> newAnyTypeFieldListEditor (
 		String fieldName,
 		Object[] getFunc,
