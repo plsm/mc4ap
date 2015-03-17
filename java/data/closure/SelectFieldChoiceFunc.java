@@ -6,10 +6,13 @@ import jmercury.userInterface.SelectChoice_2;
 
 /**
  * Encapsultes the {@code func(D,int)=setResult(selectChoice(D,F))} closure
- * which sets a choice. This function is used in constructor {@code
+ * which sets a choice. This function is used in mercury constructor {@code
  * selectOneOf}. If is a function that given a data and a choice index
  * returns the next data and field value that should be presented to the
  * user.
+ *
+ * @param <D> The mercury type of the data
+ * @param <F> The mercury type of the field data
  *
  * @author pedro
  */
@@ -24,7 +27,7 @@ public class SelectFieldChoiceFunc<D, F>
 	/**
 	 * Construct a set function wrapper.
 	 *
-	 * @param setFunc
+	 * @param selectedChoiceFunc
 	 */
 	public SelectFieldChoiceFunc (Object[] selectedChoiceFunc)
 	{
@@ -35,6 +38,8 @@ public class SelectFieldChoiceFunc<D, F>
 	 * Apply the function to the given data.
 	 *
 	 * @param data The data to get the field.
+	 * @param index The index of the field data to return.
+	 *
 	 * @return The field value.
 	 */
 	public SetResult_1<SelectChoice_2<D, F>> apply (D data, int index)

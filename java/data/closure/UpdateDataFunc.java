@@ -7,6 +7,8 @@ import jmercury.runtime.MethodPtr2;
  * set a field of some data.  The result may be a valid data, or if the
  * field value is invalid data, a string is returned.
  * 
+ * @param <D> The mercury type of the data.
+ *
  * @author pedro
  */
 final public class UpdateDataFunc<D>
@@ -17,7 +19,7 @@ final public class UpdateDataFunc<D>
 	final private Object[] updateDataFunc;
 	/**
 	 * Construct a set function wrapper.
-	 * @param setFunc 
+	 * @param updateDataFunc 
 	 */
 	public UpdateDataFunc (Object[] updateDataFunc)
 	{
@@ -26,7 +28,6 @@ final public class UpdateDataFunc<D>
 	/**
 	 * Apply the set function to the given data and field.
 	 * @param data The data to be updated.
-	 * @param field The new value of hte field
 	 * @return 
 	 */
 	public D apply (D data)

@@ -5,9 +5,11 @@ import jmercury.runtime.MethodPtr2;
 
 /**
  * Encapsultes the {@code func(D)=maybe(int)} closure which returns the current
- * selected data choice. This function is used in constructor
+ * selected data choice. This function is used in mercury constructor
  * {@code selectOneOf/3}. If is a function that given a data returns the current
  * selected data choice index.
+ *
+ * @param <D> The mercury type of the data.
  *
  * @author Pedro
  */
@@ -22,7 +24,7 @@ public class SelectedDataChoiceFunc<D>
 	/**
 	 * Construct a set function wrapper.
 	 *
-	 * @param setFunc
+	 * @param selectedChoiceFunc
 	 */
 	public SelectedDataChoiceFunc (Object[] selectedChoiceFunc)
 	{

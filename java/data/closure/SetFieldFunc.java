@@ -4,7 +4,10 @@ package data.closure;
  * Encapsulates mercury type {@code func(D,F)=setResult(D)}.  This function
  * is used to set a field of some data.  The result may be a valid data, or
  * if the field value is invalid data, a string is returned.
- * 
+ *
+ * @param <D> The mercury type of the data.
+ * @param <F> The mercury type of the field data.
+ *
  * @author pedro
  */
 final public class SetFieldFunc<D, F>
