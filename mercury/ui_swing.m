@@ -163,7 +163,7 @@ setMao(Debug, Maos, Index) = Result :-
 	initFrame(Title::in, Data::in) = (Result::frame_uo),
 	[will_not_call_mercury, promise_pure],
 	"
-	Result = new ui.swing.UIFrame (Title, Data);
+	Result = ui.swing.UIFrame.createFrame (Title, Data);
 	"
 	).
 
@@ -172,7 +172,7 @@ setMao(Debug, Maos, Index) = Result :-
 	initFrame(Title::in, Data::ui) = (Result::frame_uo),
 	[will_not_call_mercury, promise_pure],
 	"
-	Result = new ui.swing.UIFrame (Title, Data);
+	Result = ui.swing.UIFrame.createFrame (Title, Data);
 	"
 	).
 
