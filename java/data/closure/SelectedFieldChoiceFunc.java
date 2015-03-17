@@ -11,6 +11,9 @@ import jmercury.runtime.MethodPtr2;
  * the current selected choice index and the field value that should be
  * presented to the user.
  *
+ * @param <D> The mercury type of the data.
+ * @param <F> The mercury type of the field data.
+ *
  * @author pedro
  */
 public class SelectedFieldChoiceFunc<D, F>

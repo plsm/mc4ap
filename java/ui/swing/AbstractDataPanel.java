@@ -6,11 +6,7 @@
 
 package ui.swing;
 
-import jmercury.userInterface.SetResult_1;
 import data.AbstractMercuryReference;
-import data.AbstractDataReference;
-import data.closure.SetFieldFunc;
-import jmercury.userInterface;
 
 /**
  * Represents a panel that is used to edit some mercury data type.

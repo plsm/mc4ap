@@ -12,11 +12,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -243,7 +241,7 @@ final public class UIFrame<D>
 	/**
 	 * Handles constructor {@code actionDataIO(pred(D, io.state, io.state))}.  When the user presses the button, the given predicate is run.  The predicate receives the data and the IO state.
 	 *
-	 * <p><b>There is a hack to pass the IO state.
+	 * <p><b>There is a hack to pass the IO state.</b>
 	 */
 	public UIFrame handle_actionDataIO (JButton button, final Object[] predIO)
 	{

@@ -13,7 +13,16 @@ import javax.swing.JRadioButton;
 import ui.Key;
 
 /**
- * A panel that presents a set of radio buttons.
+ * A panel that presents a set of radio buttons to select options for some data
+ * field. This panel is useful for mercury types with multiple constructors.
+ * Each constructor has its own radio button. If the constructor has arguments,
+ * then the radio button also has a panel with components to edit the
+ * constructor arguments.
+ *
+ * <p>Radio buttons without panels have an empty label associated.
+ *
+ * @param <D1> the mercury type of the data.
+ * @param <D2> the mercury type of the field data.
  *
  * @author pedro
  */
@@ -21,13 +30,6 @@ abstract public class AbstractSelectOneOfPanel<D1, D2>
 	extends AbstractDataPanel<D1, AbstractMercuryReference<D1>>
 	implements ComponentPopulate<D1>
 {
-
-	/**
-	 * Empty panel key. Some radio buttons do not have any panel associated. When
-	 * the user presses them or when the field corresponds to such radio button,
-	 * an empty label is displayed.
-	 */
-//	static protected String EMPTY = "empty";
 	/**
 	 * The panel that has been selected after pressing a radio button.
 	 */
@@ -56,13 +58,11 @@ abstract public class AbstractSelectOneOfPanel<D1, D2>
 	static protected KeyGenerator keyGenerator = new KeyGenerator ();
 
 	/**
-	 *
+	 * Construct a panel that will hold radio buttons.  Each radio button is associated with some panel.  All panels are used to edit a field data.  The field type is {@code D1} 
 	 * @param data
 	 * @param frame
 	 * @param parentPanel
 	 * @param panelName
-	 * @param funcSelectedChoice
-	 * @param funcSetData
 	 */
 	protected AbstractSelectOneOfPanel (AbstractMercuryReference<D1> data, UIFrame frame, UIPanel<D1> parentPanel, String panelName)
 	{
@@ -79,7 +79,7 @@ abstract public class AbstractSelectOneOfPanel<D1, D2>
 	 * {@code UIPanel} Mercury data can be placed. Inline panels are bordered
 	 * panels that visually group swing components.
 	 *
-	 * @return
+	 * @return an inline panel.
 	 */
 	abstract public InlinePanelField<D1, D2> newInlinePanelForChoice ();
 
