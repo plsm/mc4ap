@@ -28,7 +28,17 @@
 
 :- type navigation ---> nav(list(string)).
 
-:- type additional ---> insert ; editDelete ; nothing.
+:- type additional --->
+	insert ;
+	editListElement ;
+	nothing.
+
+:- type editListElement(T) --->
+	noChange ;
+	delete ;
+	newValue(T) ;
+	duplicate
+	.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Implementation of exported predicates and functions
@@ -416,12 +426,18 @@ handleEditListFieldAction(Navigation, Get, Set, MapString, ReadValueForList, MEd
 			;
 			MEditListValue = yes(EditListValue),
 			handleEditDeleteListValue(nextNavigation(Navigation, label(string.format("element #%d", [i(SelectedAction)]))), MapString, EditListValue, list.det_head(End), Result, !IO),
-			(
-				Result = no,
+			(	% switch
+				Result = delete,
 				MData = Set(!.Data, list.append(Start, NewEnd))
 				;
-				Result = yes(NewValue),
+				Result = newValue(NewValue),
 				MData = Set(!.Data, list.append(Start, [NewValue | NewEnd]))
+				;
+				Result = noChange,
+				MData = ok(!.Data)
+				;
+				Result = duplicate,
+				MData = Set(!.Data, list.append(Start, [list.det_head(End) | End]))
 			)
 		),
 		handleResult(MData, !Data, !IO),
@@ -434,21 +450,31 @@ handleEditListFieldAction(Navigation, Get, Set, MapString, ReadValueForList, MEd
 		throw("handleEditListFieldAction/9: Never reached, invalid selected action")
 	).
 
-:- pred handleEditDeleteListValue(navigation, func(T) = string, pred(navigation, T, T, io.state, io.state), T, maybe(T), io.state, io.state).
+:- pred handleEditDeleteListValue(
+	navigation,
+	func(T) = string,
+	pred(navigation, T, T, io.state, io.state),
+	T,
+	editListElement(T),
+	io.state, io.state).
 :- mode handleEditDeleteListValue(in, in, in(pred(in, in, out, di, uo) is det), in, out, di, uo) is det.
 
 handleEditDeleteListValue(Navigation, MapString, EditListValue, Value, Result, !IO) :-
-	printList(editDelete, [MapString(Value)], Navigation, !IO),
-	askActionUser(3, SelectedAction, !IO),
+	printList(editListElement, [MapString(Value)], Navigation, !IO),
+	askActionUser(4, SelectedAction, !IO),
 	(if
 		SelectedAction = 2
 	then
 		EditListValue(nextNavigation(Navigation, label("edit")), Value, NextValue, !IO),
-		Result = yes(NextValue)
+		Result = newValue(NextValue)
 	else if
 		SelectedAction = 3
 	then
-		Result = no
+		Result = delete
+	else if
+		SelectedAction = 4
+	then
+		  Result = duplicate
 	else if
 		SelectedAction = 1
 	then
@@ -456,7 +482,7 @@ handleEditDeleteListValue(Navigation, MapString, EditListValue, Value, Result, !
 	else if
 		SelectedAction = 0
 	then
-		Result = yes(Value)
+		Result = noChange
 	else
 		throw("handleEditDeleteListValue/7: Never reached, invalid selected action")
 	).
@@ -548,7 +574,7 @@ printList(Additional, List, Navigation, !IO) :-
 	(func(String, Length) = Result :-
 		Result = int.max(string.length(String), Length)
 	),
-	list.foldl(FuncMaxLength, List, 6) = MaxLength,
+	list.foldl(FuncMaxLength, List, 9) = MaxLength,
 	% print top horizontal line
 	io.format(" %s\n", [s(string.pad_right("", '▄', MaxLength + 5 + WidthIdx))], !IO),
 	% print list elements
@@ -565,9 +591,10 @@ printList(Additional, List, Navigation, !IO) :-
 		Additional = insert,
 		io.format("▐ %*d - %s ▌\n", [i(WidthIdx), i(Number), s(string.pad_right("Insert", ' ', MaxLength))], !IO)
 		;
-		Additional = editDelete,
+		Additional = editListElement,
 		io.format("▐ %*d - %s ▌\n", [i(WidthIdx), i(Number), s(string.pad_right("Edit", ' ', MaxLength))], !IO),
-		io.format("▐ %*d - %s ▌\n", [i(WidthIdx), i(Number + 1), s(string.pad_right("Delete", ' ', MaxLength))], !IO)
+		io.format("▐ %*d - %s ▌\n", [i(WidthIdx), i(Number + 1), s(string.pad_right("Delete", ' ', MaxLength))], !IO),
+		io.format("▐ %*d - %s ▌\n", [i(WidthIdx), i(Number + 2), s(string.pad_right("Duplicate", ' ', MaxLength))], !IO)
 	),
 	% print the return from field list dialog
 	io.format("▐ %s - %s ▌\n", [s(string.pad_left("0", ' ', WidthIdx)), s(string.pad_right("Back", ' ', MaxLength))], !IO),
