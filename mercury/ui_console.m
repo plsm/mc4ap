@@ -115,7 +115,7 @@ showMenu(ListMenuItem, Navigation, !Data, !IO) :-
 :- mode showDialog(in, in, in, out, di, uo) is det.
 
 showDialog(ListDialogItem, Navigation, !Data, !IO) :-
-	ListInterfaceData = list.map(userInterface.did, ListDialogItem),
+	ListInterfaceData = list.map(dialogItemAsInterfaceData(!.Data), ListDialogItem),
 	printInterface(ListInterfaceData, Navigation, !IO),
 	askActionUser(list.length(ListInterfaceData), SelectedAction, !IO),
 	(if
@@ -133,6 +133,38 @@ showDialog(ListDialogItem, Navigation, !Data, !IO) :-
 	else
 		true
 	).
+
+:- func dialogItemAsInterfaceData(D, dialogItem(D)) = interfaceData.
+
+dialogItemAsInterfaceData(_, di(InterfaceData)) = InterfaceData.
+
+dialogItemAsInterfaceData(Data, di(InterfaceData, DialogAction)) = label(Result) :-
+	InterfaceData = label(Label),
+	(if
+		DialogAction = updateFieldInt(Get, _),
+		Extra = string.format("[%d]", [i(Get(Data))])
+	;
+		DialogAction = updateFieldFloat(Get, _),
+		Extra = string.format("[%f]", [f(Get(Data))])
+	;
+		DialogAction = updateFieldString(Get, _),
+		Extra = string.format("[%s]", [s(Get(Data))])
+	;
+		DialogAction = updateFieldBool(Get, _),
+		Field = Get(Data),
+		(	%
+			Field = yes,
+			Extra = "[X]"
+		;
+			Field = no,
+			Extra = "[ ]"
+		)
+	then
+		Result = Label ++ " " ++ Extra
+	else
+		Result = Label
+	)
+	.
 
 :- pred handleDialogAction(navigation, userInterface.dialogItem(D), D, D, io.state, io.state).
 :- mode handleDialogAction(in, in, in, out, di, uo) is det.
